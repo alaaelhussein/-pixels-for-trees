@@ -4,6 +4,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const container = document.querySelector("#admin-grid");
   if (!container) return;
 
-  const pixels = generateMockPixels(300);
-  createPixelGrid(container, { pixels, displaySize: 100 });
+  const pixels = generateMockPixels(300, 100);
+  createPixelGrid(container, { pixels, gridSize: 100 });
 });

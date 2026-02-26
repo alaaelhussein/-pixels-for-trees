@@ -4,6 +4,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const container = document.querySelector("#landing-grid");
   if (!container) return;
 
-  const pixels = generateMockPixels(150);
-  createPixelGrid(container, { pixels, displaySize: 80 });
+  const pixels = generateMockPixels(150, 100);
+  createPixelGrid(container, { pixels, gridSize: 100 });
 });
