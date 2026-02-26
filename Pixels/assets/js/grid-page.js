@@ -12,10 +12,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
   let selectedPixels = [];
 
-  const pixels = generateMockPixels(200);
-  createPixelGrid(container, {
+  const gridSize = 100;
+  const pixels = generateMockPixels(500, gridSize);
+  const grid = createPixelGrid(container, {
     pixels,
-    displaySize: 100,
+    gridSize,
     interactive: true,
     onSelectionChange: (selection) => {
       selectedPixels = selection;
@@ -32,6 +33,11 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     },
   });
+
+  const resetBtn = document.querySelector("#reset-view-btn");
+  if (resetBtn) {
+    resetBtn.addEventListener("click", () => grid.resetView());
+  }
 
   continueButton.addEventListener("click", () => {
     if (!selectedPixels.length) return;
