@@ -11,7 +11,7 @@ require_once __DIR__ . "/includes/header.php";
         <div class="mb-8">
           <h1 class="text-3xl font-bold text-gray-900 mb-2">Choisis tes pixels</h1>
           <p class="text-gray-600">
-            Clique sur les pixels gris pour les sélectionner. Chaque pixel représente 1 arbre à planter (≈5€).
+            Clique sur les pixels pour les sélectionner. Utilisez la <b>molette</b> pour zoomer et <b>glissez</b> pour vous déplacer dans la forêt.
           </p>
         </div>
 
@@ -31,6 +31,7 @@ require_once __DIR__ . "/includes/header.php";
                 <div class="w-4 h-4 bg-orange-400"></div>
                 <span>Sélectionné</span>
               </div>
+              <button id="reset-view-btn" class="ml-auto text-sm text-blue-600 hover:underline">Réinitialiser la vue</button>
             </div>
           </div>
 
