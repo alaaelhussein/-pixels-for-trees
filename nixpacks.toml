@@ -1,2 +1,2 @@
 [phases.setup]
-nixPkgs = ["php83"]
+nixPkgs = ["php83", "sqlite"]
