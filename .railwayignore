@@ -1,0 +1,9 @@
+.git
+node_modules
+playwright-report
+test-results
+.playwright-mcp
+*.log
+*.tmp
+*.bak
+readme_max.md

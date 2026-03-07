@@ -26,5 +26,19 @@ if ($action === "confirm") {
     ]);
 }
 
+if ($action === "delete") {
+    delete_donation((string) ($_POST["id"] ?? ""));
+}
+
+if ($action === "reset") {
+    reset_donations();
+}
+
+if ($action === "test_webhook") {
+    $result = fire_test_webhook((string) ($_POST["id"] ?? ""));
+    set_flash($result["ok"] ? "success" : "error", $result["ok"] ? "Test webhook fired OK." : ("Test webhook failed: " . ($result["error"] ?? "unknown")));
+    go("../admin.php");
+}
+
 set_flash("success", "Admin action complete.");
 go("../admin.php");
