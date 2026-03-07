@@ -47,10 +47,33 @@ require_once __DIR__ . "/includes/header.php";
           This reservation expired. Go back to the wall and pick free cells again.
         </div>
       <?php elseif ($done): ?>
-        <div class="rounded-lg border border-blue-200 bg-blue-50 p-4 text-blue-800">
-          Every.org return received. If the wall is not updated yet,
-          wait for the webhook or reload this page.
+        <div class="rounded-lg border border-blue-200 bg-blue-50 p-4 text-blue-800 flex items-center justify-between">
+          <span>Every.org return received — waiting for payment confirmation…</span>
+          <span id="poll-spinner" class="ml-3 text-blue-400 text-xs">checking…</span>
         </div>
+        <script>
+          // poll every 3 s for up to 2 minutes until status flips to confirmed
+          (function() {
+            var id = <?= json_encode($item['id']) ?>;
+            var tries = 0;
+            function check() {
+              tries++;
+              fetch('api/donation-status.php?id=' + encodeURIComponent(id))
+                .then(function(r) { return r.json(); })
+                .then(function(d) {
+                  if (d.confirmed) {
+                    window.location.reload();
+                  } else if (tries < 40) {
+                    setTimeout(check, 3000);
+                  } else {
+                    document.getElementById('poll-spinner').textContent = 'timed out — reload manually';
+                  }
+                })
+                .catch(function() { if (tries < 40) setTimeout(check, 3000); });
+            }
+            setTimeout(check, 3000);
+          })();
+        </script>
       <?php elseif ($cancel): ?>
         <div class="rounded-lg border border-amber-200 bg-amber-50 p-4 text-amber-800">
           Payment cancelled. You can reopen Every.org whenever you want.
