@@ -1,27 +1,63 @@
 <?php
+// donations-read.php — SQLite read layer for donations
+
+function row_to_donation(array $row): array
+{
+    $meta = json_decode((string) ($row['meta'] ?? '{}'), true) ?: [];
+    $d = [
+        'id'            => $row['id'],
+        'userId'        => $row['user_id'],
+        'userName'      => $row['user_name'],
+        'amount'        => (int) $row['amount'],
+        'pixelsData'    => json_decode((string) ($row['pixels_data'] ?? '[]'), true) ?: [],
+        'message'       => $row['message'],
+        'status'        => $row['status'],
+        'treeState'     => $row['tree_state'],
+        'treeRef'       => $row['tree_ref'],
+        'providerId'    => $row['provider_id'],
+        'confirmedAt'   => $row['confirmed_at'],
+        'reservedUntil' => $row['reserved_until'],
+        'createdAt'     => $row['created_at'],
+    ];
+    return array_merge($d, $meta);
+}
+
 function donations_all(): array
 {
-    return read_json_file(data_path("donations.json"));
+    $rows = db()->query("SELECT * FROM donations ORDER BY created_at ASC")->fetchAll();
+    return array_map('row_to_donation', $rows);
 }
 
 function donations_save(array $items): void
 {
-    write_json_file(data_path("donations.json"), $items);
+    // used internally — upserts all passed items
+    $pdo  = db();
+    $stmt = $pdo->prepare("
+        INSERT OR REPLACE INTO donations
+            (id, user_id, user_name, amount, pixels_data, message,
+             status, tree_state, tree_ref, provider_id,
+             confirmed_at, reserved_until, created_at, meta)
+        VALUES
+            (:id, :user_id, :user_name, :amount, :pixels_data, :message,
+             :status, :tree_state, :tree_ref, :provider_id,
+             :confirmed_at, :reserved_until, :created_at, :meta)
+    ");
+    foreach ($items as $d) {
+        $stmt->execute(donation_to_row($d));
+    }
 }
 
 function find_donation(string $id): ?array
 {
-    foreach (donations_all() as $item) {
-        if (($item["id"] ?? "") === $id) {
-            return $item;
-        }
-    }
-
-    return null;
+    $stmt = db()->prepare("SELECT * FROM donations WHERE id = ?");
+    $stmt->execute([$id]);
+    $row = $stmt->fetch();
+    return $row ? row_to_donation($row) : null;
 }
 
 function user_donations(string $userId): array
 {
-    return array_values(array_filter(donations_all(),
-        fn($item) => ($item["userId"] ?? "") === $userId));
+    $stmt = db()->prepare("SELECT * FROM donations WHERE user_id = ? ORDER BY created_at ASC");
+    $stmt->execute([$userId]);
+    return array_map('row_to_donation', $stmt->fetchAll());
 }
