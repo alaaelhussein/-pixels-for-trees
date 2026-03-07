@@ -1,0 +1,31 @@
+<?php
+session_start();
+
+require_once __DIR__ . "/config.php";
+require_once __DIR__ . "/paths.php";
+require_once __DIR__ . "/every.php";
+require_once __DIR__ . "/json.php";
+require_once __DIR__ . "/id.php";
+require_once __DIR__ . "/flash.php";
+require_once __DIR__ . "/csrf.php";
+require_once __DIR__ . "/jwt.php";
+require_once __DIR__ . "/http.php";
+require_once __DIR__ . "/validate.php";
+require_once __DIR__ . "/users.php";
+require_once __DIR__ . "/users-write.php";
+require_once __DIR__ . "/auth.php";
+require_once __DIR__ . "/auth-user.php";
+require_once __DIR__ . "/donations-read.php";
+require_once __DIR__ . "/donations-write.php";
+require_once __DIR__ . "/wall.php";
+require_once __DIR__ . "/wall-stats.php";
+require_once __DIR__ . "/webhooks.php";
+require_once __DIR__ . "/webhook-handle.php";
+require_once __DIR__ . "/trees.php";
+require_once __DIR__ . "/trees-call.php";
+require_once __DIR__ . "/donations-confirm.php";
+require_once __DIR__ . "/admin-tools.php";
+require_once __DIR__ . "/pending.php";
+require_once __DIR__ . "/user-stats.php";
+require_once __DIR__ . "/cors.php";
+require_once __DIR__ . "/view.php";

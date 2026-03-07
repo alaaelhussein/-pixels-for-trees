@@ -1,82 +1,168 @@
 <?php
-require_once __DIR__ . "/includes/mock-data.php";
-$pageTitle = "Choisis tes pixels";
-$isLoggedIn = true;
-$username = $currentUser["name"];
+require_once __DIR__ . "/includes/app/boot.php";
+require_once __DIR__ . "/includes/site-data.php";
+require_once __DIR__ . "/includes/site-tools.php";
+
+$user = current_user();
+$pageTitle = "Choose your pixels";
+$wallPixels = grid_pixels();
+$canCheckout = $user !== null;
+$reserveMinutes = (int) ceil(reservation_seconds() / 60);
+$loginNext = "login.php?next=" . urlencode("recap.php");
+
 require_once __DIR__ . "/includes/header.php";
 ?>
-  <div class="min-h-screen flex flex-col bg-gray-50">
-    <main class="flex-1 py-8 px-4">
-      <div class="max-w-7xl mx-auto">
-        <div class="mb-8">
-          <h1 class="text-3xl font-bold text-gray-900 mb-2">Choisis tes pixels</h1>
-          <p class="text-gray-600">
-            Clique sur les pixels pour les sélectionner. Utilisez la <b>molette</b> pour zoomer et <b>glissez</b> pour vous déplacer dans la forêt.
-          </p>
+<div class="bg-gray-950" style="height: calc(100vh - 73px);">
+  <main class="relative h-full overflow-hidden">
+    <div id="grid-container" class="absolute inset-0"></div>
+
+    <div class="absolute left-3 top-3 z-30 flex flex-col gap-2">
+      <button id="info-button" type="button" title="Info" class="h-10 w-10 rounded-full bg-white/95 text-sm font-bold text-gray-900 shadow-lg">
+        i
+      </button>
+      <button id="zoom-in-btn" type="button" title="Zoom in" class="h-10 w-10 rounded-full bg-white/95 text-xl text-gray-900 shadow-lg">
+        +
+      </button>
+      <button id="zoom-out-btn" type="button" title="Zoom out" class="h-10 w-10 rounded-full bg-white/95 text-xl text-gray-900 shadow-lg">
+        −
+      </button>
+      <button id="reset-view-btn" type="button" title="Reset view" class="h-10 w-10 rounded-full bg-white/95 text-sm font-semibold text-gray-900 shadow-lg">
+        ↺
+      </button>
+      <div id="grid-info-panel" class="hidden mt-1 w-72 rounded-2xl bg-white/95 p-4 text-sm text-gray-700 shadow-2xl">
+        <h1 class="text-lg font-semibold text-gray-900">Choose your pixels</h1>
+        <p class="mt-2">
+          The view starts at the top-left corner.
+          It opens at about 100 × 50 cells.
+        </p>
+        <p class="mt-2">
+          Click a free cell to open the drawer.
+          Reserved cells are locked for other people.
+          You can zoom out to see more of the wall.
+        </p>
+        <p class="mt-2 text-blue-700">
+          <?= $canCheckout
+              ? "Reservation starts when you continue and lasts {$reserveMinutes} minutes."
+              : "Guests can test colors first. Reservation starts after log in." ?>
+        </p>
+        <div class="mt-3 flex flex-wrap gap-3 text-xs font-medium text-gray-600">
+          <?php foreach ($gridLegend as $item): ?>
+            <div class="flex items-center gap-2">
+              <div class="<?= join_classes($item['box']) ?>"></div>
+              <span><?= $item["label"] ?></span>
+            </div>
+          <?php endforeach; ?>
+        </div>
+      </div>
+    </div>
+
+    <div class="absolute right-3 top-3 z-40 flex flex-col items-end gap-3">
+      <div class="flex flex-col items-end gap-2">
+        <?php if ($user): ?>
+          <a href="logout.php" class="rounded-xl bg-white/95 px-4 py-2 text-sm font-semibold text-gray-900 shadow-lg">
+            Log out
+          </a>
+        <?php else: ?>
+          <a href="<?= htmlspecialchars($loginNext) ?>" class="rounded-xl bg-orange-500 px-4 py-2 text-sm font-semibold text-white shadow-lg">
+            Log in
+          </a>
+        <?php endif; ?>
+      </div>
+
+      <div class="rounded-2xl bg-white/95 p-3 shadow-xl">
+        <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">
+          Jump to cell
+        </p>
+        <div class="mt-2 flex items-center gap-2">
+          <input id="jump-x" type="number" min="0" max="999" placeholder="X" class="w-20 rounded-lg border border-gray-200 px-3 py-2 text-sm" />
+          <input id="jump-y" type="number" min="0" max="999" placeholder="Y" class="w-20 rounded-lg border border-gray-200 px-3 py-2 text-sm" />
+          <button id="jump-button" type="button" class="rounded-lg bg-gray-900 px-3 py-2 text-sm font-semibold text-white">
+            Go
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div id="cell-drawer" class="hidden absolute bottom-0 left-0 z-50 w-full px-3 pb-0 sm:left-1/2 sm:max-w-md sm:-translate-x-1/2 md:max-w-lg">
+      <div class="w-full rounded-t-2xl border border-gray-200 bg-white shadow-2xl sm:mb-3 sm:rounded-2xl">
+        <div class="flex items-center justify-between gap-3 border-b border-gray-200 px-4 py-3">
+          <div class="min-w-0">
+            <div class="flex items-center gap-2">
+              <span id="drawer-status" class="rounded-full bg-blue-100 px-2 py-1 text-xs font-semibold text-blue-700">
+                Selected
+              </span>
+              <span id="active-cell" class="text-sm font-semibold text-gray-900">
+                Cell —
+              </span>
+            </div>
+            <p id="drawer-meta" class="mt-1 text-xs text-gray-500"></p>
+          </div>
+          <button id="close-drawer-button" type="button" class="h-8 w-8 rounded-full border border-gray-200 text-sm text-gray-700">
+            ×
+          </button>
         </div>
 
-        <div class="grid lg:grid-cols-3 gap-8">
-          <div class="lg:col-span-2">
-            <div id="grid-container"></div>
-            <div class="mt-4 flex gap-6 text-sm">
-              <div class="flex items-center gap-2">
-                <div class="w-4 h-4 bg-gray-100 border border-gray-300"></div>
-                <span>Libre</span>
-              </div>
-              <div class="flex items-center gap-2">
-                <div class="w-4 h-4 bg-green-500"></div>
-                <span>Financé</span>
-              </div>
-              <div class="flex items-center gap-2">
-                <div class="w-4 h-4 bg-orange-400"></div>
-                <span>Sélectionné</span>
-              </div>
-              <button id="reset-view-btn" class="ml-auto text-sm text-blue-600 hover:underline">Réinitialiser la vue</button>
+        <div class="px-4 py-3">
+          <div class="flex items-center gap-3">
+            <div id="drawer-color-preview" class="h-12 w-12 rounded-xl border border-gray-200 bg-orange-400"></div>
+            <div>
+              <p id="drawer-note" class="text-sm text-gray-700"></p>
+              <p id="drawer-owner" class="mt-1 text-xs text-gray-500"></p>
             </div>
           </div>
 
-          <div class="lg:col-span-1">
-            <div class="bg-white rounded-lg shadow-md p-6 sticky top-4">
-              <h2 class="text-xl font-semibold text-gray-900 mb-4">Ma sélection</h2>
-
-              <div class="space-y-4 mb-6">
-                <div class="flex justify-between items-center py-3 border-b border-gray-200">
-                  <span class="text-gray-600">Pixels sélectionnés</span>
-                  <span id="selected-count" class="text-2xl font-bold text-gray-900">0</span>
-                </div>
-
-                <div class="flex justify-between items-center py-3 border-b border-gray-200">
-                  <span class="text-gray-600">Montant estimé</span>
-                  <span id="total-amount" class="text-2xl font-bold text-green-600">0 €</span>
-                </div>
-
-                <div class="bg-green-50 border border-green-200 rounded-lg p-4">
-                  <p class="text-sm text-green-800">
-                    ≈ <span id="total-trees" class="font-semibold">0</span> arbres seront plantés grâce à ta contribution !
-                  </p>
-                </div>
-              </div>
-
-              <button
-                id="continue-button"
-                disabled
-                class="w-full bg-orange-500 hover:bg-orange-600 disabled:bg-gray-300 disabled:cursor-not-allowed text-white py-3 rounded-lg font-semibold transition flex items-center justify-center gap-2"
-              >
-                Continuer vers le don
-                <?= icon_arrow_right("w-5 h-5") ?>
-              </button>
-
-              <p id="empty-hint" class="text-sm text-gray-500 text-center mt-3">
-                Sélectionne au moins un pixel pour continuer
-              </p>
+          <div id="drawer-editor" class="mt-4">
+            <div class="grid grid-cols-[72px,1fr] items-center gap-3">
+              <input id="pixel-color" type="color" value="#FB923C" class="h-14 w-full rounded-lg border border-gray-200 bg-white" />
+              <input id="pixel-color-text" type="text" value="#FB923C" maxlength="7" class="w-full rounded-lg border border-gray-200 px-3 py-3 font-mono text-sm uppercase" />
             </div>
+            <label for="pixel-message" class="mt-4 block text-sm font-medium text-gray-700">
+              Public message
+            </label>
+            <textarea id="pixel-message" class="mt-2 w-full rounded-lg border border-gray-200 px-4 py-3" rows="3" maxlength="120"></textarea>
+          </div>
+
+          <div id="drawer-locked" class="hidden mt-4 rounded-xl bg-slate-50 p-4 text-sm text-slate-700">
+            <p id="drawer-locked-text"></p>
+          </div>
+
+          <div class="mt-4 grid grid-cols-3 gap-3 rounded-xl bg-gray-50 p-4 text-sm text-gray-700">
+            <div>
+              <p class="text-xs uppercase tracking-wide text-gray-500">Selected</p>
+              <p id="selected-count" class="mt-1 text-lg font-semibold text-gray-900">0</p>
+            </div>
+            <div>
+              <p class="text-xs uppercase tracking-wide text-gray-500">Amount</p>
+              <p id="total-amount" class="mt-1 text-lg font-semibold text-gray-900">0 $</p>
+            </div>
+            <div>
+              <p class="text-xs uppercase tracking-wide text-gray-500">Trees</p>
+              <p id="total-trees" class="mt-1 text-lg font-semibold text-gray-900">0</p>
+            </div>
+          </div>
+
+          <div class="mt-4 flex flex-wrap gap-2">
+            <button id="remove-active-button" type="button" class="rounded-lg border border-red-200 px-4 py-2 text-sm font-semibold text-red-600">
+              Remove
+            </button>
+            <button id="clear-selection-button" type="button" class="rounded-lg border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700">
+              Clear all
+            </button>
+            <button id="continue-button" type="button" disabled class="ml-auto rounded-lg bg-orange-500 px-4 py-2 text-sm font-semibold text-white disabled:bg-gray-300 disabled:text-gray-500">
+              <?= $canCheckout ? "Continue" : "Log in to reserve" ?>
+            </button>
           </div>
         </div>
       </div>
-    </main>
-  </div>
-
-  <script type="module" src="assets/js/grid-page.js"></script>
-<?php
-require_once __DIR__ . "/includes/footer.php";
-?>
+    </div>
+  </main>
+</div>
+<script id="wall-data" type="application/json"><?= safe_json($wallPixels) ?></script>
+<script id="grid-auth" type="application/json"><?= safe_json([
+  "loggedIn" => $canCheckout,
+  "nextUrl" => "recap.php",
+  "loginUrl" => "login.php?next=" . urlencode("recap.php"),
+  "reservationMinutes" => $reserveMinutes,
+]) ?></script>
+<script type="module" src="assets/js/grid-page.js"></script>
+<?php require_once __DIR__ . "/includes/footer.php"; ?>
