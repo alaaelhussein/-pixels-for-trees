@@ -46,7 +46,41 @@ $flash = pull_flash();
           >
             Grid
           </a>
-          <?php if ($currentUser): ?>
+          <?php if ($currentUser && ($currentUser['role'] ?? '') === 'admin'): ?>
+            <a
+              href="admin.php"
+              class="text-gray-600 hover:text-gray-900 transition"
+            >
+              Dashboard
+            </a>
+            <a
+              href="admin.php#donations"
+              class="text-gray-600 hover:text-gray-900 transition"
+            >
+              Donations
+            </a>
+            <a
+              href="admin.php#users"
+              class="text-gray-600 hover:text-gray-900 transition"
+            >
+              Users
+            </a>
+            <a
+              href="admin.php#webhooks"
+              class="text-gray-600 hover:text-gray-900 transition"
+            >
+              Webhooks
+            </a>
+            <span class="text-xs font-semibold bg-orange-100 text-orange-700 rounded-full px-2 py-1">
+              Admin
+            </span>
+            <a
+              href="logout.php"
+              class="text-gray-600 hover:text-gray-900 transition"
+            >
+              Log out
+            </a>
+          <?php elseif ($currentUser): ?>
             <a
               href="logout.php"
               class="text-gray-600 hover:text-gray-900
