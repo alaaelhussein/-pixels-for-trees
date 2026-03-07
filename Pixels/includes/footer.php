@@ -1,48 +1,65 @@
 <?php
-require_once __DIR__ . "/icons.php";
+require_once __DIR__ . "/site-data.php";
+require_once __DIR__ . "/site-tools.php";
 ?>
-  <footer class="bg-gray-900 text-gray-300 mt-auto">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-        <div>
-          <h3 class="text-white font-semibold mb-4">Pixels for Trees</h3>
-          <p class="text-sm">
-            Allume un pixel, finance un arbre, visualise ton impact.
+  <footer
+    class="text-gray-300"
+    style="
+      position:relative;
+      background-image:url('assets/media/footer.png');
+      background-repeat:repeat-x;
+      background-position:left top;
+      background-size:auto;
+    "
+  >
+    <div style="position:absolute;inset:0;background:rgba(0,0,0,0.65);pointer-events:none;"></div>
+    <div
+      class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12"
+      style="position:relative;z-index:1;"
+    >
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center" style="grid-template-columns:1fr 1fr;">
+        <div class="flex flex-col items-center text-center">
+          <img
+            src="assets/media/navbar-logo.png"
+            alt="Pixels for Trees"
+            style="display:block;height:48px;width:auto;opacity:.9;"
+          />
+          <p class="text-sm mt-4">
+            Light up a pixel, fund a tree,
+            track your impact.
           </p>
         </div>
 
-        <div>
-          <h3 class="text-white font-semibold mb-4">Partenaires</h3>
+        <div class="flex flex-col items-center text-center">
+          <h3 class="text-white font-semibold mb-4">
+            Partners
+          </h3>
           <div class="space-y-2 text-sm">
-            <div class="flex items-center gap-2">
-              <div class="w-6 h-6 bg-green-600 rounded"></div>
-              <span>Every.org - Plateforme de dons</span>
-            </div>
-            <div class="flex items-center gap-2">
-              <div class="w-6 h-6 bg-green-700 rounded"></div>
-              <span>Plant With Purpose - Organisation</span>
-            </div>
-          </div>
-        </div>
-
-        <div>
-          <h3 class="text-white font-semibold mb-4">Suivez-nous</h3>
-          <div class="flex gap-4">
-            <a href="#" class="hover:text-white transition" aria-label="Facebook">
-              <?= icon_facebook("w-5 h-5") ?>
-            </a>
-            <a href="#" class="hover:text-white transition" aria-label="Twitter">
-              <?= icon_twitter("w-5 h-5") ?>
-            </a>
-            <a href="#" class="hover:text-white transition" aria-label="Instagram">
-              <?= icon_instagram("w-5 h-5") ?>
-            </a>
+            <?php foreach ($footerPartners as $item): ?>
+              <div class="flex items-center gap-2">
+                <div
+                  class="<?= join_classes([
+                      'w-6',
+                      'h-6',
+                      $item['dot'],
+                      'rounded',
+                  ]) ?>"
+                ></div>
+                <span><?= $item["label"] ?></span>
+              </div>
+            <?php endforeach; ?>
           </div>
         </div>
       </div>
 
-      <div class="border-t border-gray-800 mt-8 pt-8 text-sm text-center">
-        <p>&copy; 2026 Pixels for Trees. Tous droits réservés. | <a href="#" class="hover:text-white">Mentions légales</a></p>
+      <div
+        class="border-t border-gray-800 mt-8 pt-8
+        text-sm text-center"
+      >
+        <p>
+          &copy; 2026 Pixels for Trees.
+          Built for visible impact.
+        </p>
       </div>
     </div>
   </footer>

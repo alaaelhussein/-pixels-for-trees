@@ -1,0 +1,30 @@
+COMPILED_INSTRUCTIONS.local.md
+readme_max.md
+
+# playwright / MCP agent artifacts
+.playwright-mcp/
+playwright-report/
+test-results/
+*.playwright.json
+
+# temp and editor artifacts
+*.tmp
+*.temp
+*.log
+*.bak
+*.orig
+.DS_Store
+Thumbs.db
+
+# Node (if ever added)
+node_modules/
+npm-debug.log*
+
+# PHP environment
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/settings.json
+.idea/

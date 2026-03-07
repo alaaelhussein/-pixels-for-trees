@@ -1,88 +1,196 @@
+import { appConfig } from "./lib/app-config.js";
+import {
+  getGridNodes,
+  isGridReady,
+  setPanelColor,
+  toggleInfo,
+  setGridSummary,
+} from "./lib/grid-page-ui.js";
+import { readWallData } from "./lib/page-wall-data.js";
+import { saveSelection } from "./lib/selection-store.js";
+import { createPixelGrid } from "./pixel-grid.js";
 
+function readAuthState() {
+  const node = document.querySelector("#grid-auth");
 
-//  IMPORTS
-// Import des fonctions utilistaires pour la grille de pixels
-import { createPixelGrid, generateMockPixels } from "./pixel-grid.js";
+  if (!node?.textContent) {
+    return {
+      loggedIn: false,
+      nextUrl: "recap.php",
+      loginUrl: "login.php?next=recap.php",
+    };
+  }
 
-// ===== INITIALISATION =====
-// Attendre que le DOM soit complètement chargé avant d'initialiser
+  try {
+    return JSON.parse(node.textContent);
+  } catch (error) {
+    return {
+      loggedIn: false,
+      nextUrl: "recap.php",
+      loginUrl: "login.php?next=recap.php",
+    };
+  }
+}
+
+function normalizeColor(value) {
+  const text = String(value || "")
+    .trim()
+    .toUpperCase();
+
+  if (/^#[0-9A-F]{6}$/.test(text)) {
+    return text;
+  }
+
+  if (/^[0-9A-F]{6}$/.test(text)) {
+    return `#${text}`;
+  }
+
+  return "";
+}
+
 document.addEventListener("DOMContentLoaded", () => {
-  // ===== SÉLECTION DES ÉLÉMENTS DOM =====
-  // Container principal pour la grille interactive
-  const container = document.querySelector("#grid-container");
-  // Affichage du nombre de pixels sélectionnés
-  const selectedCountEl = document.querySelector("#selected-count");
-  // Affichage du montant total (en €)
-  const totalAmountEl = document.querySelector("#total-amount");
-  // Affichage du nombre d'arbres qui seront plantés
-  const totalTreesEl = document.querySelector("#total-trees");
-  // Bouton pour passer au récapitulatif
-  const continueButton = document.querySelector("#continue-button");
-  // Message d'indice si aucun pixel n'est sélectionné
-  const emptyHint = document.querySelector("#empty-hint");
+  const nodes = getGridNodes();
+  const auth = readAuthState();
 
-  // Validation : vérifier que tous les éléments DOM existent
-  if (!container || !selectedCountEl || !totalAmountEl || !totalTreesEl || !continueButton) return;
+  if (!isGridReady(nodes)) {
+    return;
+  }
 
-  //  VARIABLES D'ÉTAT 
-  // Tableau stockant les pixels actuellement sélectionnés par l'utilisateur
-  let selectedPixels = [];
-
-  // ===== CONFIGURATION DE LA GRILLE =====
-  // Taille de la grille (100x100 pixels)
-  const gridSize = 100;
-  // Génération de 500 pixels fictifs pour la démonstration
-  const pixels = generateMockPixels(500, gridSize);
-  // Initialisation de la grille interactive avec configuration personnalisée
-  const grid = createPixelGrid(container, {
-    // Liste des pixels à afficher
+  const pixels = readWallData();
+  const grid = createPixelGrid(nodes.container, {
     pixels,
-    // Dimensions de la grille
-    gridSize,
-    // Activer le mode interactif (clic pour sélectionner)
+    gridSize: appConfig.demoGridSize,
     interactive: true,
-    // Callback : exécuté chaque fois que la sélection change
-    onSelectionChange: (selection) => {
-      // Mise à jour du tableau des pixels sélectionnés
-      selectedPixels = selection;
-      // Calcul du montant total : 1 pixel = 5 € (tarif fixe)
-      const totalAmount = selectedPixels.length * 5;
-
-      // Mise à jour des compteurs affichés
-      // 1. Nombre de pixels sélectionnés
-      selectedCountEl.textContent = String(selectedPixels.length);
-      // 2. Montant total en euros
-      totalAmountEl.textContent = `${totalAmount} €`;
-      // 3. Nombre d'arbres qui seront plantés (= nombre de pixels)
-      totalTreesEl.textContent = String(selectedPixels.length);
-
-      // Gestion de l'état du bouton "Continuer"
-      // Le bouton est désactivé si aucun pixel n'est sélectionné
-      const isDisabled = selectedPixels.length === 0;
-      continueButton.disabled = isDisabled;
-      // Affichage/masquage du message d'indice si la sélection est vide
-      if (emptyHint) {
-        emptyHint.classList.toggle("hidden", !isDisabled);
-      }
+    fullScreen: true,
+    onChange(items, activeItem) {
+      setGridSummary(nodes, items, activeItem);
     },
   });
 
-  // ===== GESTION DES ÉVÉNEMENTS =====
-  // Bouton pour réinitialiser la vue de la grille
-  const resetBtn = document.querySelector("#reset-view-btn");
-  if (resetBtn) {
-    // Permettre à l'utilisateur de réinitialiser le zoom/pan de la grille
-    resetBtn.addEventListener("click", () => grid.resetView());
+  setPanelColor(nodes, "#FB923C");
+  grid.setDraftColor("#FB923C");
+  setGridSummary(nodes, [], null);
+
+  if (nodes.infoButton) {
+    nodes.infoButton.addEventListener("click", () => {
+      toggleInfo(nodes);
+    });
   }
 
-  // Écouteur du bouton "Continuer" pour passer au récapitulatif
-  continueButton.addEventListener("click", () => {
-    // Vérification de sécurité : au moins un pixel doit être sélectionné
-    if (!selectedPixels.length) return;
-    // Sauvegarde de la sélection dans localStorage pour persistence cross-page
-    localStorage.setItem("selectedPixels", JSON.stringify(selectedPixels));
-    // Redirection vers la page de récapitulatif
-    window.location.href = "recap.php";
+  if (nodes.reset) {
+    nodes.reset.addEventListener("click", () => {
+      grid.resetView();
+    });
+  }
+
+  if (nodes.zoomIn) {
+    nodes.zoomIn.addEventListener("click", () => {
+      grid.zoomIn();
+    });
+  }
+
+  if (nodes.zoomOut) {
+    nodes.zoomOut.addEventListener("click", () => {
+      grid.zoomOut();
+    });
+  }
+
+  if (nodes.jump) {
+    const runJump = () => {
+      const x = Number(nodes.jumpX?.value || -1);
+      const y = Number(nodes.jumpY?.value || -1);
+
+      if (x < 0 || y < 0) {
+        return;
+      }
+
+      grid.goToCell(x, y);
+    };
+
+    nodes.jump.addEventListener("click", runJump);
+    nodes.jumpX?.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") {
+        runJump();
+      }
+    });
+    nodes.jumpY?.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") {
+        runJump();
+      }
+    });
+  }
+
+  if (nodes.close) {
+    nodes.close.addEventListener("click", () => {
+      grid.clearActive();
+    });
+  }
+
+  if (nodes.remove) {
+    nodes.remove.addEventListener("click", () => {
+      grid.removeActive();
+    });
+  }
+
+  if (nodes.clear) {
+    nodes.clear.addEventListener("click", () => {
+      grid.clearSelection();
+    });
+  }
+
+  function applyColor(value) {
+    const color = normalizeColor(value);
+
+    if (!color) {
+      return;
+    }
+
+    setPanelColor(nodes, color);
+    grid.setDraftColor(color);
+    grid.setActiveColor(color);
+  }
+
+  if (nodes.color) {
+    nodes.color.addEventListener("input", (event) => {
+      applyColor(event.target.value);
+    });
+  }
+
+  if (nodes.colorText) {
+    nodes.colorText.addEventListener("input", (event) => {
+      const color = normalizeColor(event.target.value);
+
+      if (color) {
+        applyColor(color);
+      }
+    });
+
+    nodes.colorText.addEventListener("blur", () => {
+      const active = grid.getActiveItem();
+
+      setPanelColor(
+        nodes,
+        normalizeColor(nodes.colorText.value) ||
+          active?.color ||
+          "#FB923C"
+      );
+    });
+  }
+
+  nodes.button.addEventListener("click", () => {
+    const selected = grid.getSelectedPixels();
+
+    if (!selected.length) {
+      return;
+    }
+
+    saveSelection({
+      pixels: selected,
+      message: nodes.message?.value || "",
+    });
+    window.location.href = auth.loggedIn
+      ? auth.nextUrl
+      : auth.loginUrl;
   });
 });
 
