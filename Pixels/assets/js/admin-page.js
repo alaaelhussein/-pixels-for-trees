@@ -1,9 +1,5 @@
-import { createPixelGrid, generateMockPixels } from "./pixel-grid.js";
+import { mountWallGrid } from "./lib/demo-grid.js";
 
 document.addEventListener("DOMContentLoaded", () => {
-  const container = document.querySelector("#admin-grid");
-  if (!container) return;
-
-  const pixels = generateMockPixels(300, 100);
-  createPixelGrid(container, { pixels, gridSize: 100 });
+  mountWallGrid("#admin-grid");
 });
