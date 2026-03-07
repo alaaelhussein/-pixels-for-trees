@@ -26,3 +26,27 @@ function seed_demo_pixels(): void
     $donation = create_donation($user, $pixels, "demo");
     confirm_donation($donation, make_id("demo"));
 }
+
+function fire_test_webhook(string $donation_id): array
+{
+    $donation = find_donation($donation_id);
+
+    if (!$donation) {
+        return ["ok" => false, "error" => "Donation not found"];
+    }
+
+    $payload = [
+        "event" => "donation.confirmed",
+        "chargeId" => make_id("test"),
+        "partnerDonationId" => $donation_id,
+        "amount" => (string) ($donation["amount"] ?? 0),
+        "currency" => "USD",
+        "firstName" => "Test",
+        "lastName" => "Donor",
+        "email" => "test@pixels.test",
+        "donationDate" => date(DATE_ATOM),
+        "toNonprofit" => ["slug" => every_nonprofit(), "name" => "Plant With Purpose"],
+    ];
+
+    return handle_webhook($payload);
+}

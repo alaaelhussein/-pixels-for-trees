@@ -32,3 +32,17 @@ function replace_donation(array $next): void
 
     donations_save($items);
 }
+
+function delete_donation(string $id): void
+{
+    $items = array_values(array_filter(
+        donations_all(),
+        fn($item) => ($item["id"] ?? "") !== $id
+    ));
+    donations_save($items);
+}
+
+function reset_donations(): void
+{
+    donations_save([]);
+}
