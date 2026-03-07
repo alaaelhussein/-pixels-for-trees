@@ -5,6 +5,7 @@ require_once __DIR__ . "/config.php";
 require_once __DIR__ . "/paths.php";
 require_once __DIR__ . "/every.php";
 require_once __DIR__ . "/json.php";
+require_once __DIR__ . "/db.php";
 require_once __DIR__ . "/id.php";
 require_once __DIR__ . "/flash.php";
 require_once __DIR__ . "/csrf.php";
