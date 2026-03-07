@@ -31,6 +31,7 @@ function every_donate_url(array $donation, array $user): string
     [$first, $last] = every_name_parts((string) ($user["name"] ?? ""));
     $params = [
         "amount" => (string) ($donation["amount"] ?? 0),
+        "min_value" => (string) price_per_pixel(),
         "frequency" => "ONCE",
         "email" => (string) ($user["email"] ?? ""),
         "first_name" => $first,

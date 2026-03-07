@@ -17,7 +17,7 @@ function grid_size(): int
 
 function price_per_pixel(): int
 {
-    return 1;
+    return 2;
 }
 
 function reservation_seconds(): int
