@@ -112,10 +112,22 @@ require_once __DIR__ . "/includes/header.php";
           </div>
 
           <div id="drawer-editor" class="mt-4">
-            <div class="grid grid-cols-[72px,1fr] items-center gap-3">
-              <input id="pixel-color" type="color" value="#FB923C" class="h-14 w-full rounded-lg border border-gray-200 bg-white" />
-              <input id="pixel-color-text" type="text" value="#FB923C" maxlength="7" class="w-full rounded-lg border border-gray-200 px-3 py-3 font-mono text-sm uppercase" />
+            <p class="mb-2 text-xs font-medium uppercase tracking-wide text-gray-500">Pick a color</p>
+            <div id="color-swatches" class="flex flex-wrap gap-2 mb-3">
+              <button type="button" class="color-swatch h-8 w-8 rounded-md border-2 border-transparent transition hover:scale-110" style="background:#FB923C" data-color="#FB923C"></button>
+              <button type="button" class="color-swatch h-8 w-8 rounded-md border-2 border-transparent transition hover:scale-110" style="background:#EF4444" data-color="#EF4444"></button>
+              <button type="button" class="color-swatch h-8 w-8 rounded-md border-2 border-transparent transition hover:scale-110" style="background:#EC4899" data-color="#EC4899"></button>
+              <button type="button" class="color-swatch h-8 w-8 rounded-md border-2 border-transparent transition hover:scale-110" style="background:#A855F7" data-color="#A855F7"></button>
+              <button type="button" class="color-swatch h-8 w-8 rounded-md border-2 border-transparent transition hover:scale-110" style="background:#6366F1" data-color="#6366F1"></button>
+              <button type="button" class="color-swatch h-8 w-8 rounded-md border-2 border-transparent transition hover:scale-110" style="background:#3B82F6" data-color="#3B82F6"></button>
+              <button type="button" class="color-swatch h-8 w-8 rounded-md border-2 border-transparent transition hover:scale-110" style="background:#06B6D4" data-color="#06B6D4"></button>
+              <button type="button" class="color-swatch h-8 w-8 rounded-md border-2 border-transparent transition hover:scale-110" style="background:#22C55E" data-color="#22C55E"></button>
+              <button type="button" class="color-swatch h-8 w-8 rounded-md border-2 border-transparent transition hover:scale-110" style="background:#84CC16" data-color="#84CC16"></button>
+              <button type="button" class="color-swatch h-8 w-8 rounded-md border-2 border-transparent transition hover:scale-110" style="background:#EAB308" data-color="#EAB308"></button>
+              <button type="button" class="color-swatch h-8 w-8 rounded-md border-2 border-transparent transition hover:scale-110" style="background:#F1F5F9" data-color="#F1F5F9"></button>
+              <button type="button" class="color-swatch h-8 w-8 rounded-md border-2 border-transparent transition hover:scale-110" style="background:#1E293B" data-color="#1E293B"></button>
             </div>
+            <input id="pixel-color-text" type="text" value="#FB923C" maxlength="7" placeholder="#FB923C" class="w-full rounded-lg border border-gray-200 px-3 py-2 font-mono text-sm uppercase" />
             <label for="pixel-message" class="mt-4 block text-sm font-medium text-gray-700">
               Public message
             </label>
