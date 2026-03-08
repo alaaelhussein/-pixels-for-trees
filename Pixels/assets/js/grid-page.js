@@ -150,11 +150,12 @@ document.addEventListener("DOMContentLoaded", () => {
     grid.setActiveColor(color);
   }
 
-  if (nodes.color) {
-    nodes.color.addEventListener("input", (event) => {
-      applyColor(event.target.value);
+  // swatch clicks
+  document.querySelectorAll(".color-swatch").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      applyColor(btn.dataset.color);
     });
-  }
+  });
 
   if (nodes.colorText) {
     nodes.colorText.addEventListener("input", (event) => {

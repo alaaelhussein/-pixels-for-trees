@@ -1,7 +1,5 @@
 <?php
 require_once __DIR__ . "/includes/app/boot.php";
-require_once __DIR__ . "/includes/site-data.php";
-require_once __DIR__ . "/includes/site-tools.php";
 
 $pageTitle = "Pixels for Trees";
 $stats = wall_stats();

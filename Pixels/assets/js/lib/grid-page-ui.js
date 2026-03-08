@@ -65,7 +65,7 @@ export function getGridNodes() {
     jumpX: document.querySelector("#jump-x"),
     jumpY: document.querySelector("#jump-y"),
     jump: document.querySelector("#jump-button"),
-    color: document.querySelector("#pixel-color"),
+    color: null, // native picker removed; swatches used instead
     colorText: document.querySelector(
       "#pixel-color-text"
     ),
@@ -103,13 +103,16 @@ export function setPanelColor(
     nodes.preview.style.background = color;
   }
 
-  if (nodes.color) {
-    nodes.color.value = color;
-  }
-
   if (nodes.colorText) {
     nodes.colorText.value = color;
   }
+
+  // highlight matching swatch
+  document.querySelectorAll(".color-swatch").forEach((btn) => {
+    const match = btn.dataset.color === color;
+    btn.style.outline = match ? "3px solid #1E293B" : "none";
+    btn.style.outlineOffset = "2px";
+  });
 }
 
 export function toggleInfo(nodes) {
