@@ -1,6 +1,5 @@
 <?php
 require_once __DIR__ . "/app/boot.php";
-require_once __DIR__ . "/icons.php";
 
 $pageTitle = $pageTitle ?? "Pixels for Trees";
 $currentUser = current_user();

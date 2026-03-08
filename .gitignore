@@ -25,6 +25,11 @@ npm-debug.log*
 .env.local
 .env.*.local
 
+# SQLite database (managed by Railway Volume)
+Pixels/data/*.db
+Pixels/data/*.db-shm
+Pixels/data/*.db-wal
+
 # IDE
 .vscode/settings.json
 .idea/

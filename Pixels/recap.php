@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . "/includes/app/boot.php";
+require_once __DIR__ . "/includes/icons.php";
 
 require_user();
 

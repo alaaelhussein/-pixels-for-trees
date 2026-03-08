@@ -1,4 +1,4 @@
 export const appConfig = {
-  pricePerPixel: 1,
+  pricePerPixel: 2,
   demoGridSize: 1000,
 };
