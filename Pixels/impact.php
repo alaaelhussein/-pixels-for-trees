@@ -41,7 +41,6 @@ require_once __DIR__ . "/includes/header.php";
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Pixels</th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Amount</th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Trees</th>
               </tr>
             </thead>
             <tbody class="bg-white divide-y divide-gray-200">
@@ -51,7 +50,6 @@ require_once __DIR__ . "/includes/header.php";
                   <td class="px-6 py-4 whitespace-nowrap"><?= count(donation_pixels($item)) ?></td>
                   <td class="px-6 py-4 whitespace-nowrap text-green-600"><?= money((int) $item["amount"]) ?></td>
                   <td class="px-6 py-4 whitespace-nowrap"><?= htmlspecialchars($item["status"]) ?></td>
-                  <td class="px-6 py-4 whitespace-nowrap"><?= htmlspecialchars($item["treeState"] ?? "pending") ?></td>
                 </tr>
               <?php endforeach; ?>
             </tbody>

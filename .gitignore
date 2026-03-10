@@ -1,13 +1,7 @@
-COMPILED_INSTRUCTIONS.local.md
+README.local.md
 readme_max.md
+.github/
 
-# playwright / MCP agent artifacts
-.playwright-mcp/
-playwright-report/
-test-results/
-*.playwright.json
-
-# temp and editor artifacts
 *.tmp
 *.temp
 *.log
@@ -16,20 +10,16 @@ test-results/
 .DS_Store
 Thumbs.db
 
-# Node (if ever added)
 node_modules/
 npm-debug.log*
 
-# PHP environment
 .env
 .env.local
 .env.*.local
 
-# SQLite database (managed by Railway Volume)
 Pixels/data/*.db
 Pixels/data/*.db-shm
 Pixels/data/*.db-wal
 
-# IDE
 .vscode/settings.json
 .idea/
