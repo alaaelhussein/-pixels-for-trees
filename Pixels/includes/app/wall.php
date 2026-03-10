@@ -23,10 +23,11 @@ function confirmed_pixels(
 
         foreach (donation_pixels($donation) as $pixel) {
             $items[] = $pixel + [
-                "status" => "reserved",
+                "status" => "confirmed",
                 "username" => $donation["userName"],
                 "amount" => $donation["amount"],
                 "message" => $donation["message"],
+                "confirmedAt" => $donation["confirmedAt"] ?? "",
             ];
         }
     }

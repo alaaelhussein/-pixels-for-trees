@@ -83,11 +83,14 @@ export function drawGrid(
   for (let y = bounds.startY; y < bounds.endY; y += 1) {
     for (let x = bounds.startX; x < bounds.endX; x += 1) {
       const key = `${x}-${y}`;
-      const reserved = pixelMap.get(key);
+      const pixel = pixelMap.get(key);
       const selected = selectedMap.get(key);
 
-      if (reserved) {
-        drawCell(ctx, x, y, state.cellSize, "#94A3B8");
+      if (pixel) {
+        const color = pixel.status === "confirmed"
+          ? (pixel.color || "#22C55E")
+          : "#94A3B8";
+        drawCell(ctx, x, y, state.cellSize, color);
       } else if (selected) {
         drawCell(
           ctx,
@@ -109,7 +112,11 @@ export function drawGrid(
         x,
         y,
         state.cellSize,
-        activeKind === "reserved" ? "#1D4ED8" : "#0F172A"
+        activeKind === "reserved"
+          ? "#1D4ED8"
+          : activeKind === "confirmed"
+            ? "#166534"
+            : "#0F172A"
       );
     }
   }

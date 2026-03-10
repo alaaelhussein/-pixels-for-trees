@@ -89,7 +89,8 @@ export function createPixelGrid(container, options) {
     const key = makePixelKey(x, y);
 
     if (pixelMap.has(key)) {
-      setActive("reserved", key);
+      const pixel = pixelMap.get(key);
+      setActive(pixel?.status || "reserved", key);
       return;
     }
 
@@ -125,7 +126,8 @@ export function createPixelGrid(container, options) {
     }
 
     if (pixelMap.has(key)) {
-      setActive("reserved", key);
+      const pixel = pixelMap.get(key);
+      setActive(pixel?.status || "reserved", key);
       return;
     }
 
