@@ -1,20 +1,25 @@
 <?php
+// Charge le socle applicatif et les utilitaires de presentation.
 require_once __DIR__ . "/includes/app/boot.php";
 require_once __DIR__ . "/includes/site-tools.php";
 
+// Restreint la page aux utilisateurs connectes et recupere leurs statistiques d'impact.
 $user = require_user();
 $stats = user_stats($user);
 $pageTitle = "My impact";
 
+// Affiche l'en-tete global du site.
 require_once __DIR__ . "/includes/header.php";
 ?>
 <div class="min-h-screen flex flex-col bg-gray-50">
   <main class="flex-1 py-8 px-4">
     <div class="max-w-7xl mx-auto">
+      <!-- En-tete de page: contexte utilisateur et promesse de transparence. -->
       <div class="mb-8">
         <h1 class="text-3xl font-bold text-gray-900 mb-2">My impact</h1>
         <p class="text-gray-600">Real history for the current account.</p>
       </div>
+      <!-- Cartes KPI personnelles: pixels finances, montant cumule, arbres soutenus. -->
       <div class="grid md:grid-cols-3 gap-6 mb-12">
         <div class="bg-white rounded-lg shadow-md p-6 border border-gray-200">
           <p class="text-gray-600 text-sm">Funded pixels</p>
@@ -29,6 +34,7 @@ require_once __DIR__ . "/includes/header.php";
           <p class="text-3xl font-semibold text-gray-900 mt-2"><?= $stats["trees"] ?></p>
         </div>
       </div>
+      <!-- Historique detaille des donations de l'utilisateur connecte. -->
       <div class="bg-white rounded-lg shadow-md overflow-hidden mb-12">
         <div class="p-6 border-b border-gray-200">
           <h2 class="text-xl font-semibold text-gray-900">My donations</h2>
@@ -56,6 +62,7 @@ require_once __DIR__ . "/includes/header.php";
           </table>
         </div>
       </div>
+      <!-- Apercu visuel d'un echantillon des pixels possedes. -->
       <div class="bg-white rounded-lg shadow-md p-6">
         <h2 class="text-xl font-semibold text-gray-900 mb-4">My pixels</h2>
         <div class="bg-gray-50 rounded-lg p-8 text-center">
@@ -69,4 +76,5 @@ require_once __DIR__ . "/includes/header.php";
     </div>
   </main>
 </div>
+<?php // Affiche le pied de page global. ?>
 <?php require_once __DIR__ . "/includes/footer.php"; ?>
