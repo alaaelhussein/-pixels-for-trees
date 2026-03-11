@@ -1,7 +1,9 @@
 <?php
+// Charge les donnees de contenu et helpers utilises par le footer.
 require_once __DIR__ . "/site-data.php";
 require_once __DIR__ . "/site-tools.php";
 ?>
+  <!-- Pied de page global: visuel de fond, partenaires et credits. -->
   <footer
     class="text-gray-300"
     style="
@@ -17,7 +19,9 @@ require_once __DIR__ . "/site-tools.php";
       class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12"
       style="position:relative;z-index:1;"
     >
+      <!-- Bloc marque et baseline du projet. -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center" style="grid-template-columns:1fr 1fr;">
+        <!-- Bloc partenaires construit depuis les donnees serveur. -->
         <div class="flex flex-col items-center text-center">
           <img
             src="assets/media/navbar-logo.png"
@@ -52,6 +56,7 @@ require_once __DIR__ . "/site-tools.php";
         </div>
       </div>
 
+      <!-- Mentions de bas de page. -->
       <div
         class="border-t border-gray-800 mt-8 pt-8
         text-sm text-center"

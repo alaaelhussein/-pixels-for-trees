@@ -1,6 +1,8 @@
 <?php
+// Charge le socle applicatif afin d'acceder aux helpers globaux.
 require_once __DIR__ . "/app/boot.php";
 
+// Definit le contexte de layout partage par toutes les pages.
 $pageTitle = $pageTitle ?? "Pixels for Trees";
 $currentUser = current_user();
 $flash = pull_flash();
@@ -17,6 +19,7 @@ $flash = pull_flash();
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-white text-gray-900">
+  <!-- Barre de navigation principale adaptee selon l'etat de session et le role. -->
   <header class="bg-white border-b border-gray-200">
     <div
       class="max-w-7xl mx-auto px-4 sm:px-6
@@ -45,6 +48,7 @@ $flash = pull_flash();
           >
             Grid
           </a>
+          <!-- Navigation conditionnelle: liens admin, utilisateur connecte ou invite. -->
           <?php if ($currentUser && ($currentUser['role'] ?? '') === 'admin'): ?>
             <a
               href="admin.php"
@@ -100,6 +104,7 @@ $flash = pull_flash();
       </div>
     </div>
   </header>
+  <!-- Bandeau de message flash (retour d'action serveur). -->
   <?php if ($flash): ?>
     <div class="bg-gray-900 text-white px-4 py-3 text-center">
       <?= htmlspecialchars($flash['text'] ?? '') ?>

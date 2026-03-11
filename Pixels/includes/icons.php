@@ -1,4 +1,5 @@
 <?php
+// Fabrique un SVG standardise a partir d'une liste de primitives vectorielles.
 function icon_svg(
     string $class,
     array $parts
@@ -16,6 +17,7 @@ function icon_svg(
         "</svg>";
 }
 
+// Icone sapin, utilisee pour symboliser l'impact environnemental.
 function icon_tree_pine(
     string $class = ""
 ): string {
@@ -26,6 +28,7 @@ function icon_tree_pine(
     ]);
 }
 
+// Icone pointeur, utile pour les actions de selection/clic.
 function icon_pointer(
     string $class = ""
 ): string {
@@ -34,6 +37,7 @@ function icon_pointer(
     ]);
 }
 
+// Icone dollar, represente la contribution financiere.
 function icon_dollar(
     string $class = ""
 ): string {
@@ -45,6 +49,7 @@ function icon_dollar(
     ]);
 }
 
+// Icone etoiles, utilisee pour les etats de mise en valeur.
 function icon_sparkles(
     string $class = ""
 ): string {
@@ -62,6 +67,7 @@ function icon_sparkles(
     ]);
 }
 
+// Icone fleche retour gauche, typiquement pour la navigation precedente.
 function icon_arrow_left(
     string $class = ""
 ): string {
