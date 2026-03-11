@@ -1,8 +1,10 @@
 <?php
+// Charge le socle applicatif et les donnees de presentation partagees.
 require_once __DIR__ . "/includes/app/boot.php";
 require_once __DIR__ . "/includes/site-data.php";
 require_once __DIR__ . "/includes/site-tools.php";
 
+// Construit le contexte utilisateur et les donnees necessaires au rendu initial.
 $user = current_user();
 $pageTitle = "Choose your pixels";
 $wallPixels = grid_pixels();
@@ -10,12 +12,15 @@ $canCheckout = $user !== null;
 $reserveMinutes = (int) ceil(reservation_seconds() / 60);
 $loginNext = "login.php?next=" . urlencode("recap.php");
 
+// Affiche l'en-tete global de la page.
 require_once __DIR__ . "/includes/header.php";
 ?>
 <div class="bg-gray-950" style="height: calc(100vh - 73px);">
   <main class="relative h-full overflow-hidden">
+    <!-- Conteneur principal du canvas grille pilote par JavaScript. -->
     <div id="grid-container" class="absolute inset-0"></div>
 
+    <!-- Panneau d'outils de navigation (info, zoom, reset de vue). -->
     <div class="absolute left-3 top-3 z-30 flex flex-col gap-2">
       <button id="info-button" type="button" title="Info" class="h-10 w-10 rounded-full bg-white/95 text-sm font-bold text-gray-900 shadow-lg">
         i
@@ -29,6 +34,7 @@ require_once __DIR__ . "/includes/header.php";
       <button id="reset-view-btn" type="button" title="Reset view" class="h-10 w-10 rounded-full bg-white/95 text-sm font-semibold text-gray-900 shadow-lg">
         ↺
       </button>
+      <!-- Aide contextuelle et legende d'etat de la grille. -->
       <div id="grid-info-panel" class="hidden mt-1 w-72 rounded-2xl bg-white/95 p-4 text-sm text-gray-700 shadow-2xl">
         <h1 class="text-lg font-semibold text-gray-900">Choose your pixels</h1>
         <p class="mt-2">
@@ -56,6 +62,7 @@ require_once __DIR__ . "/includes/header.php";
       </div>
     </div>
 
+    <!-- Zone d'actions session: authentification et navigation rapide vers une cellule. -->
     <div class="absolute right-3 top-3 z-40 flex flex-col items-end gap-3">
       <div class="flex flex-col items-end gap-2">
         <?php if ($user): ?>
@@ -69,6 +76,7 @@ require_once __DIR__ . "/includes/header.php";
         <?php endif; ?>
       </div>
 
+      <!-- Raccourci de centrage sur coordonnees X/Y. -->
       <div class="rounded-2xl bg-white/95 p-3 shadow-xl">
         <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">
           Jump to cell
@@ -83,6 +91,7 @@ require_once __DIR__ . "/includes/header.php";
       </div>
     </div>
 
+    <!-- Drawer bas de page: edition de cellule, recap selection et actions de reservation. -->
     <div id="cell-drawer" class="hidden absolute bottom-0 left-0 z-50 w-full px-3 pb-0 sm:left-1/2 sm:max-w-md sm:-translate-x-1/2 md:max-w-lg">
       <div class="w-full rounded-t-2xl border border-gray-200 bg-white shadow-2xl sm:mb-3 sm:rounded-2xl">
         <div class="flex items-center justify-between gap-3 border-b border-gray-200 px-4 py-3">
@@ -111,6 +120,7 @@ require_once __DIR__ . "/includes/header.php";
             </div>
           </div>
 
+          <!-- Editeur utilisateur: couleur + message public. -->
           <div id="drawer-editor" class="mt-4">
             <p class="mb-2 text-xs font-medium uppercase tracking-wide text-gray-500">Pick a color</p>
             <div id="color-swatches" class="flex flex-wrap gap-2 mb-3">
@@ -134,10 +144,12 @@ require_once __DIR__ . "/includes/header.php";
             <textarea id="pixel-message" class="mt-2 w-full rounded-lg border border-gray-200 px-4 py-3" rows="3" maxlength="120"></textarea>
           </div>
 
+          <!-- Etat lecture seule pour les cellules verrouillees ou non editables. -->
           <div id="drawer-locked" class="hidden mt-4 rounded-xl bg-slate-50 p-4 text-sm text-slate-700">
             <p id="drawer-locked-text"></p>
           </div>
 
+          <!-- Resume dynamique de la selection courante. -->
           <div class="mt-4 grid grid-cols-3 gap-3 rounded-xl bg-gray-50 p-4 text-sm text-gray-700">
             <div>
               <p class="text-xs uppercase tracking-wide text-gray-500">Selected</p>
@@ -153,6 +165,7 @@ require_once __DIR__ . "/includes/header.php";
             </div>
           </div>
 
+          <!-- Actions de gestion de selection et passage au recap/checkout. -->
           <div class="mt-4 flex flex-wrap gap-2">
             <button id="remove-active-button" type="button" class="rounded-lg border border-red-200 px-4 py-2 text-sm font-semibold text-red-600">
               Remove
@@ -169,12 +182,16 @@ require_once __DIR__ . "/includes/header.php";
     </div>
   </main>
 </div>
+<!-- Etat du mur injecte cote serveur et consomme cote client. -->
 <script id="wall-data" type="application/json"><?= safe_json($wallPixels) ?></script>
+<!-- Contexte d'authentification et de reservation pour la logique front de la grille. -->
 <script id="grid-auth" type="application/json"><?= safe_json([
   "loggedIn" => $canCheckout,
   "nextUrl" => "recap.php",
   "loginUrl" => "login.php?next=" . urlencode("recap.php"),
   "reservationMinutes" => $reserveMinutes,
 ]) ?></script>
+<!-- Module JavaScript principal de la page grille. -->
 <script type="module" src="assets/js/grid-page.js"></script>
+<?php // Affiche le pied de page global. ?>
 <?php require_once __DIR__ . "/includes/footer.php"; ?>
