@@ -34,6 +34,9 @@ require_once __DIR__ . "/includes/header.php";
       <button id="reset-view-btn" type="button" title="Reset view" class="h-10 w-10 rounded-full bg-white/95 text-sm font-semibold text-gray-900 shadow-lg">
         ↺
       </button>
+      <button id="export-png-btn" type="button" title="Export PNG" class="rounded-full bg-white/95 px-3 py-2 text-xs font-semibold text-gray-900 shadow-lg dark:bg-gray-800 dark:text-gray-100">
+        PNG
+      </button>
       <!-- Aide contextuelle et legende d'etat de la grille. -->
       <div id="grid-info-panel" class="hidden mt-1 w-72 rounded-2xl bg-white/95 p-4 text-sm text-gray-700 shadow-2xl">
         <h1 class="text-lg font-semibold text-gray-900">Choose your pixels</h1>

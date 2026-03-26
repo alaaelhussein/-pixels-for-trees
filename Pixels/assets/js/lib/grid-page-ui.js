@@ -56,6 +56,9 @@ export function getGridNodes() {
     reset: document.querySelector(
       "#reset-view-btn"
     ),
+    exportPng: document.querySelector(
+      "#export-png-btn"
+    ),
     zoomIn: document.querySelector(
       "#zoom-in-btn"
     ),
