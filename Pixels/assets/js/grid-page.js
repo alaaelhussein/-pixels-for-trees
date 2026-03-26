@@ -48,6 +48,55 @@ function normalizeColor(value) {
   return "";
 }
 
+function buildExportFileName() {
+  const now = new Date();
+  const yyyy = now.getFullYear();
+  const mm = String(now.getMonth() + 1).padStart(2, "0");
+  const dd = String(now.getDate()).padStart(2, "0");
+  const hh = String(now.getHours()).padStart(2, "0");
+  const min = String(now.getMinutes()).padStart(2, "0");
+  const ss = String(now.getSeconds()).padStart(2, "0");
+
+  return `pixels-grid-${yyyy}${mm}${dd}-${hh}${min}${ss}.png`;
+}
+
+function downloadUrl(url, fileName) {
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = fileName;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+
+function exportGridAsPng(nodes) {
+  const canvas = nodes.container?.querySelector("canvas");
+
+  if (!canvas) {
+    return false;
+  }
+
+  const fileName = buildExportFileName();
+
+  if (typeof canvas.toBlob === "function") {
+    canvas.toBlob((blob) => {
+      if (!blob) {
+        return;
+      }
+
+      const url = URL.createObjectURL(blob);
+      downloadUrl(url, fileName);
+      URL.revokeObjectURL(url);
+    }, "image/png");
+
+    return true;
+  }
+
+  const dataUrl = canvas.toDataURL("image/png");
+  downloadUrl(dataUrl, fileName);
+  return true;
+}
+
 const drawerPositionKey = "pixels.grid.drawer.position.v1";
 
 function clamp(value, min, max) {
@@ -334,6 +383,25 @@ document.addEventListener("DOMContentLoaded", () => {
   if (nodes.zoomOut) {
     nodes.zoomOut.addEventListener("click", () => {
       grid.zoomOut();
+    });
+  }
+
+  if (nodes.exportPng) {
+    nodes.exportPng.addEventListener("click", () => {
+      const ok = exportGridAsPng(nodes);
+
+      if (!ok) {
+        nodes.exportPng.textContent = "Error";
+        window.setTimeout(() => {
+          nodes.exportPng.textContent = "PNG";
+        }, 1200);
+        return;
+      }
+
+      nodes.exportPng.textContent = "Saved";
+      window.setTimeout(() => {
+        nodes.exportPng.textContent = "PNG";
+      }, 1200);
     });
   }
 
