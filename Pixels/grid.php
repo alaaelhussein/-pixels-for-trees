@@ -75,26 +75,12 @@ require_once __DIR__ . "/includes/header.php";
           </a>
         <?php endif; ?>
       </div>
-
-      <!-- Raccourci de centrage sur coordonnees X/Y. -->
-      <div class="rounded-2xl bg-white/95 p-3 shadow-xl">
-        <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">
-          Jump to cell
-        </p>
-        <div class="mt-2 flex items-center gap-2">
-          <input id="jump-x" type="number" min="0" max="999" placeholder="X" class="w-20 rounded-lg border border-gray-200 px-3 py-2 text-sm" />
-          <input id="jump-y" type="number" min="0" max="999" placeholder="Y" class="w-20 rounded-lg border border-gray-200 px-3 py-2 text-sm" />
-          <button id="jump-button" type="button" class="rounded-lg bg-gray-900 px-3 py-2 text-sm font-semibold text-white">
-            Go
-          </button>
-        </div>
-      </div>
     </div>
 
     <!-- Drawer bas de page: edition de cellule, recap selection et actions de reservation. -->
     <div id="cell-drawer" class="hidden absolute bottom-0 left-0 z-50 w-full px-3 pb-0 sm:left-1/2 sm:max-w-md sm:-translate-x-1/2 md:max-w-lg">
       <div class="w-full rounded-t-2xl border border-gray-200 bg-white shadow-2xl sm:mb-3 sm:rounded-2xl">
-        <div class="flex items-center justify-between gap-3 border-b border-gray-200 px-4 py-3">
+        <div id="drawer-drag-handle" class="flex cursor-move touch-none select-none items-center justify-between gap-3 border-b border-gray-200 px-4 py-3">
           <div class="min-w-0">
             <div class="flex items-center gap-2">
               <span id="drawer-status" class="rounded-full bg-blue-100 px-2 py-1 text-xs font-semibold text-blue-700">

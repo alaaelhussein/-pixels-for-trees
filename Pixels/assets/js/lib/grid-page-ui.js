@@ -62,9 +62,6 @@ export function getGridNodes() {
     zoomOut: document.querySelector(
       "#zoom-out-btn"
     ),
-    jumpX: document.querySelector("#jump-x"),
-    jumpY: document.querySelector("#jump-y"),
-    jump: document.querySelector("#jump-button"),
     color: null, // native picker removed; swatches used instead
     colorText: document.querySelector(
       "#pixel-color-text"
@@ -80,6 +77,9 @@ export function getGridNodes() {
     ),
     close: document.querySelector(
       "#close-drawer-button"
+    ),
+    dragHandle: document.querySelector(
+      "#drawer-drag-handle"
     ),
   };
 }
