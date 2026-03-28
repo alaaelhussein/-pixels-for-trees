@@ -14,10 +14,6 @@ if ($action === "seed") {
     seed_demo_pixels();
 }
 
-if ($action === "retry") {
-    retry_tree_sync();
-}
-
 if ($action === "confirm") {
     handle_webhook([
         "event" => "donation.confirmed",

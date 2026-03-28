@@ -1,6 +1,8 @@
 <?php
+// Charge le socle applicatif afin d'acceder aux helpers globaux.
 require_once __DIR__ . "/app/boot.php";
 
+// Definit le contexte de layout partage par toutes les pages.
 $pageTitle = $pageTitle ?? "Pixels for Trees";
 $currentUser = current_user();
 $flash = pull_flash();
@@ -14,9 +16,83 @@ $flash = pull_flash();
     content="width=device-width, initial-scale=1"
   />
   <title><?= htmlspecialchars($pageTitle) ?></title>
+  <script>
+    window.tailwind = window.tailwind || {};
+    window.tailwind.config = {
+      darkMode: "class",
+    };
+  </script>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    // Pré-appliquer le mode dark avant le rendu pour éviter le flash clair.
+    (function applyInitialTheme() {
+      const key = "pixels.theme.mode";
+      const savedTheme = localStorage.getItem(key);
+      const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+      const shouldUseDark = savedTheme === "dark" || (savedTheme === null && prefersDark);
+
+      if (shouldUseDark) {
+        document.documentElement.classList.add("dark");
+      }
+    })();
+  </script>
+  <script src="assets/js/dark-mode.js"></script>
+  <style>
+    html {
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    body,
+    header,
+    main,
+    #cell-drawer > div,
+    #grid-info-panel {
+      transition: background-color 0.25s ease, color 0.25s ease, border-color 0.25s ease;
+    }
+
+    html.dark body {
+      background-color: #030712;
+      color: #f3f4f6;
+    }
+
+    html.dark header {
+      background-color: #111827;
+      border-color: #374151;
+    }
+
+    html.dark header a {
+      color: #d1d5db;
+    }
+
+    html.dark header a:hover {
+      color: #ffffff;
+    }
+
+    html.dark #grid-info-panel,
+    html.dark #cell-drawer > div {
+      background-color: #1f2937;
+      border-color: #374151;
+      color: #e5e7eb;
+    }
+
+    html.dark #drawer-meta,
+    html.dark #drawer-owner,
+    html.dark .text-gray-500,
+    html.dark .text-gray-600,
+    html.dark .text-gray-700 {
+      color: #9ca3af !important;
+    }
+
+    html.dark #pixel-message,
+    html.dark #pixel-color-text {
+      background-color: #111827;
+      border-color: #4b5563;
+      color: #f9fafb;
+    }
+  </style>
 </head>
-<body class="bg-white text-gray-900">
+<body class="bg-white text-gray-900 dark:bg-gray-950 dark:text-gray-100">
+  <!-- Barre de navigation principale adaptee selon l'etat de session et le role. -->
   <header class="bg-white border-b border-gray-200">
     <div
       class="max-w-7xl mx-auto px-4 sm:px-6
@@ -45,6 +121,7 @@ $flash = pull_flash();
           >
             Grid
           </a>
+          <!-- Navigation conditionnelle: liens admin, utilisateur connecte ou invite. -->
           <?php if ($currentUser && ($currentUser['role'] ?? '') === 'admin'): ?>
             <a
               href="admin.php"
@@ -100,6 +177,7 @@ $flash = pull_flash();
       </div>
     </div>
   </header>
+  <!-- Bandeau de message flash (retour d'action serveur). -->
   <?php if ($flash): ?>
     <div class="bg-gray-900 text-white px-4 py-3 text-center">
       <?= htmlspecialchars($flash['text'] ?? '') ?>

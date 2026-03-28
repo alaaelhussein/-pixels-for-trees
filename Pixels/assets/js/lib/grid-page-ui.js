@@ -56,15 +56,15 @@ export function getGridNodes() {
     reset: document.querySelector(
       "#reset-view-btn"
     ),
+    exportPng: document.querySelector(
+      "#export-png-btn"
+    ),
     zoomIn: document.querySelector(
       "#zoom-in-btn"
     ),
     zoomOut: document.querySelector(
       "#zoom-out-btn"
     ),
-    jumpX: document.querySelector("#jump-x"),
-    jumpY: document.querySelector("#jump-y"),
-    jump: document.querySelector("#jump-button"),
     color: null, // native picker removed; swatches used instead
     colorText: document.querySelector(
       "#pixel-color-text"
@@ -80,6 +80,9 @@ export function getGridNodes() {
     ),
     close: document.querySelector(
       "#close-drawer-button"
+    ),
+    dragHandle: document.querySelector(
+      "#drawer-drag-handle"
     ),
   };
 }
@@ -185,6 +188,27 @@ function showReserved(nodes, item) {
   setPanelColor(nodes, "#94A3B8");
 }
 
+function showConfirmed(nodes, item) {
+  setStatus(
+    nodes,
+    "Funded",
+    "rounded-full bg-green-100 px-2 py-1 text-xs font-semibold text-green-700"
+  );
+  nodes.active.textContent = `Cell ${item.x}, ${item.y}`;
+  nodes.meta.textContent = "Already funded on the wall.";
+  nodes.note.textContent = item.message || "This cell has already been paid for.";
+  nodes.owner.textContent = item.username
+    ? `By ${item.username}`
+    : "Funded on the wall";
+  nodes.editor.classList.add("hidden");
+  nodes.locked.classList.remove("hidden");
+  nodes.remove.classList.add("hidden");
+  nodes.lockedText.textContent = item.confirmedAt
+    ? `Confirmed at ${formatReserveTime(item.confirmedAt)}.`
+    : "This cell has already been paid for.";
+  setPanelColor(nodes, item.color || "#22C55E");
+}
+
 export function setGridSummary(
   nodes,
   pixels,
@@ -207,6 +231,11 @@ export function setGridSummary(
 
   if (activeItem.kind === "reserved") {
     showReserved(nodes, activeItem);
+    return;
+  }
+
+  if (activeItem.kind === "confirmed") {
+    showConfirmed(nodes, activeItem);
     return;
   }
 

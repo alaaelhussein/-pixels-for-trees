@@ -21,8 +21,6 @@ require_once __DIR__ . "/wall.php";
 require_once __DIR__ . "/wall-stats.php";
 require_once __DIR__ . "/webhooks.php";
 require_once __DIR__ . "/webhook-handle.php";
-require_once __DIR__ . "/trees.php";
-require_once __DIR__ . "/trees-call.php";
 require_once __DIR__ . "/donations-confirm.php";
 require_once __DIR__ . "/admin-tools.php";
 require_once __DIR__ . "/pending.php";

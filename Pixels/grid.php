@@ -1,8 +1,10 @@
 <?php
+// Charge le socle applicatif et les donnees de presentation partagees.
 require_once __DIR__ . "/includes/app/boot.php";
 require_once __DIR__ . "/includes/site-data.php";
 require_once __DIR__ . "/includes/site-tools.php";
 
+// Construit le contexte utilisateur et les donnees necessaires au rendu initial.
 $user = current_user();
 $pageTitle = "Choose your pixels";
 $wallPixels = grid_pixels();
@@ -10,12 +12,15 @@ $canCheckout = $user !== null;
 $reserveMinutes = (int) ceil(reservation_seconds() / 60);
 $loginNext = "login.php?next=" . urlencode("recap.php");
 
+// Affiche l'en-tete global de la page.
 require_once __DIR__ . "/includes/header.php";
 ?>
-<div class="bg-gray-950" style="height: calc(100vh - 73px);">
+<div class="bg-gray-50 dark:bg-gray-950" style="height: calc(100vh - 73px);">
   <main class="relative h-full overflow-hidden">
+    <!-- Conteneur principal du canvas grille pilote par JavaScript. -->
     <div id="grid-container" class="absolute inset-0"></div>
 
+    <!-- Panneau d'outils de navigation (info, zoom, reset de vue). -->
     <div class="absolute left-3 top-3 z-30 flex flex-col gap-2">
       <button id="info-button" type="button" title="Info" class="h-10 w-10 rounded-full bg-white/95 text-sm font-bold text-gray-900 shadow-lg">
         i
@@ -29,6 +34,10 @@ require_once __DIR__ . "/includes/header.php";
       <button id="reset-view-btn" type="button" title="Reset view" class="h-10 w-10 rounded-full bg-white/95 text-sm font-semibold text-gray-900 shadow-lg">
         ↺
       </button>
+      <button id="export-png-btn" type="button" title="Export PNG" class="rounded-full bg-white/95 px-3 py-2 text-xs font-semibold text-gray-900 shadow-lg dark:bg-gray-800 dark:text-gray-100">
+        PNG
+      </button>
+      <!-- Aide contextuelle et legende d'etat de la grille. -->
       <div id="grid-info-panel" class="hidden mt-1 w-72 rounded-2xl bg-white/95 p-4 text-sm text-gray-700 shadow-2xl">
         <h1 class="text-lg font-semibold text-gray-900">Choose your pixels</h1>
         <p class="mt-2">
@@ -56,63 +65,56 @@ require_once __DIR__ . "/includes/header.php";
       </div>
     </div>
 
+    <!-- Zone d'actions session: authentification et mode sombre. -->
     <div class="absolute right-3 top-3 z-40 flex flex-col items-end gap-3">
+      <button id="theme-toggle" type="button" title="Toggle dark mode" class="h-10 w-10 rounded-full bg-white/95 text-lg text-gray-900 shadow-lg transition hover:scale-110 dark:bg-gray-800 dark:text-yellow-400">
+        ☀️
+      </button>
       <div class="flex flex-col items-end gap-2">
         <?php if ($user): ?>
-          <a href="logout.php" class="rounded-xl bg-white/95 px-4 py-2 text-sm font-semibold text-gray-900 shadow-lg">
+          <a href="logout.php" class="rounded-xl bg-white/95 px-4 py-2 text-sm font-semibold text-gray-900 shadow-lg dark:bg-gray-800 dark:text-white">
             Log out
           </a>
         <?php else: ?>
-          <a href="<?= htmlspecialchars($loginNext) ?>" class="rounded-xl bg-orange-500 px-4 py-2 text-sm font-semibold text-white shadow-lg">
+          <a href="<?= htmlspecialchars($loginNext) ?>" class="rounded-xl bg-orange-500 px-4 py-2 text-sm font-semibold text-white shadow-lg hover:bg-orange-400 transition">
             Log in
           </a>
         <?php endif; ?>
       </div>
-
-      <div class="rounded-2xl bg-white/95 p-3 shadow-xl">
-        <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">
-          Jump to cell
-        </p>
-        <div class="mt-2 flex items-center gap-2">
-          <input id="jump-x" type="number" min="0" max="999" placeholder="X" class="w-20 rounded-lg border border-gray-200 px-3 py-2 text-sm" />
-          <input id="jump-y" type="number" min="0" max="999" placeholder="Y" class="w-20 rounded-lg border border-gray-200 px-3 py-2 text-sm" />
-          <button id="jump-button" type="button" class="rounded-lg bg-gray-900 px-3 py-2 text-sm font-semibold text-white">
-            Go
-          </button>
-        </div>
-      </div>
     </div>
 
+    <!-- Drawer bas de page: edition de cellule, recap selection et actions de reservation. -->
     <div id="cell-drawer" class="hidden absolute bottom-0 left-0 z-50 w-full px-3 pb-0 sm:left-1/2 sm:max-w-md sm:-translate-x-1/2 md:max-w-lg">
-      <div class="w-full rounded-t-2xl border border-gray-200 bg-white shadow-2xl sm:mb-3 sm:rounded-2xl">
-        <div class="flex items-center justify-between gap-3 border-b border-gray-200 px-4 py-3">
+      <div class="w-full rounded-t-2xl border border-gray-200 bg-white shadow-2xl sm:mb-3 sm:rounded-2xl dark:border-gray-700 dark:bg-gray-800">
+        <div id="drawer-drag-handle" class="flex cursor-move touch-none select-none items-center justify-between gap-3 border-b border-gray-200 px-4 py-3 dark:border-gray-700">
           <div class="min-w-0">
             <div class="flex items-center gap-2">
-              <span id="drawer-status" class="rounded-full bg-blue-100 px-2 py-1 text-xs font-semibold text-blue-700">
+              <span id="drawer-status" class="rounded-full bg-blue-100 px-2 py-1 text-xs font-semibold text-blue-700 dark:bg-blue-900 dark:text-blue-200">
                 Selected
               </span>
-              <span id="active-cell" class="text-sm font-semibold text-gray-900">
+              <span id="active-cell" class="text-sm font-semibold text-gray-900 dark:text-white">
                 Cell —
               </span>
             </div>
-            <p id="drawer-meta" class="mt-1 text-xs text-gray-500"></p>
+            <p id="drawer-meta" class="mt-1 text-xs text-gray-500 dark:text-gray-400"></p>
           </div>
-          <button id="close-drawer-button" type="button" class="h-8 w-8 rounded-full border border-gray-200 text-sm text-gray-700">
+          <button id="close-drawer-button" type="button" class="h-8 w-8 rounded-full border border-gray-200 text-sm text-gray-700 dark:border-gray-600 dark:text-gray-300">
             ×
           </button>
         </div>
 
         <div class="px-4 py-3">
           <div class="flex items-center gap-3">
-            <div id="drawer-color-preview" class="h-12 w-12 rounded-xl border border-gray-200 bg-orange-400"></div>
+            <div id="drawer-color-preview" class="h-12 w-12 rounded-xl border border-gray-200 bg-orange-400 dark:border-gray-600"></div>
             <div>
-              <p id="drawer-note" class="text-sm text-gray-700"></p>
-              <p id="drawer-owner" class="mt-1 text-xs text-gray-500"></p>
+              <p id="drawer-note" class="text-sm text-gray-700 dark:text-gray-300"></p>
+              <p id="drawer-owner" class="mt-1 text-xs text-gray-500 dark:text-gray-400"></p>
             </div>
           </div>
 
+          <!-- Editeur utilisateur: couleur + message public. -->
           <div id="drawer-editor" class="mt-4">
-            <p class="mb-2 text-xs font-medium uppercase tracking-wide text-gray-500">Pick a color</p>
+            <p class="mb-2 text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">Pick a color</p>
             <div id="color-swatches" class="flex flex-wrap gap-2 mb-3">
               <button type="button" class="color-swatch h-8 w-8 rounded-md border-2 border-transparent transition hover:scale-110" style="background:#FB923C" data-color="#FB923C"></button>
               <button type="button" class="color-swatch h-8 w-8 rounded-md border-2 border-transparent transition hover:scale-110" style="background:#EF4444" data-color="#EF4444"></button>
@@ -127,40 +129,43 @@ require_once __DIR__ . "/includes/header.php";
               <button type="button" class="color-swatch h-8 w-8 rounded-md border-2 border-transparent transition hover:scale-110" style="background:#F1F5F9" data-color="#F1F5F9"></button>
               <button type="button" class="color-swatch h-8 w-8 rounded-md border-2 border-transparent transition hover:scale-110" style="background:#1E293B" data-color="#1E293B"></button>
             </div>
-            <input id="pixel-color-text" type="text" value="#FB923C" maxlength="7" placeholder="#FB923C" class="w-full rounded-lg border border-gray-200 px-3 py-2 font-mono text-sm uppercase" />
-            <label for="pixel-message" class="mt-4 block text-sm font-medium text-gray-700">
+            <input id="pixel-color-text" type="text" value="#FB923C" maxlength="7" placeholder="#FB923C" class="w-full rounded-lg border border-gray-200 px-3 py-2 font-mono text-sm uppercase dark:border-gray-600 dark:bg-gray-700 dark:text-white" />
+            <label for="pixel-message" class="mt-4 block text-sm font-medium text-gray-700 dark:text-gray-300">
               Public message
             </label>
-            <textarea id="pixel-message" class="mt-2 w-full rounded-lg border border-gray-200 px-4 py-3" rows="3" maxlength="120"></textarea>
+            <textarea id="pixel-message" class="mt-2 w-full rounded-lg border border-gray-200 px-4 py-3 dark:border-gray-600 dark:bg-gray-700 dark:text-white" rows="3" maxlength="120"></textarea>
           </div>
 
-          <div id="drawer-locked" class="hidden mt-4 rounded-xl bg-slate-50 p-4 text-sm text-slate-700">
+          <!-- Etat lecture seule pour les cellules verrouillees ou non editables. -->
+          <div id="drawer-locked" class="hidden mt-4 rounded-xl bg-slate-50 p-4 text-sm text-slate-700 dark:bg-slate-900 dark:text-slate-300">
             <p id="drawer-locked-text"></p>
           </div>
 
-          <div class="mt-4 grid grid-cols-3 gap-3 rounded-xl bg-gray-50 p-4 text-sm text-gray-700">
+          <!-- Resume dynamique de la selection courante. -->
+          <div class="mt-4 grid grid-cols-3 gap-3 rounded-xl bg-gray-50 p-4 text-sm text-gray-700 dark:bg-gray-700 dark:text-gray-100">
             <div>
-              <p class="text-xs uppercase tracking-wide text-gray-500">Selected</p>
-              <p id="selected-count" class="mt-1 text-lg font-semibold text-gray-900">0</p>
+              <p class="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">Selected</p>
+              <p id="selected-count" class="mt-1 text-lg font-semibold text-gray-900 dark:text-white">0</p>
             </div>
             <div>
-              <p class="text-xs uppercase tracking-wide text-gray-500">Amount</p>
-              <p id="total-amount" class="mt-1 text-lg font-semibold text-gray-900">0 $</p>
+              <p class="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">Amount</p>
+              <p id="total-amount" class="mt-1 text-lg font-semibold text-gray-900 dark:text-white">0 $</p>
             </div>
             <div>
-              <p class="text-xs uppercase tracking-wide text-gray-500">Trees</p>
-              <p id="total-trees" class="mt-1 text-lg font-semibold text-gray-900">0</p>
+              <p class="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">Trees</p>
+              <p id="total-trees" class="mt-1 text-lg font-semibold text-gray-900 dark:text-white">0</p>
             </div>
           </div>
 
+          <!-- Actions de gestion de selection et passage au recap/checkout. -->
           <div class="mt-4 flex flex-wrap gap-2">
-            <button id="remove-active-button" type="button" class="rounded-lg border border-red-200 px-4 py-2 text-sm font-semibold text-red-600">
+            <button id="remove-active-button" type="button" class="rounded-lg border border-red-200 px-4 py-2 text-sm font-semibold text-red-600 dark:border-red-700 dark:text-red-400">
               Remove
             </button>
-            <button id="clear-selection-button" type="button" class="rounded-lg border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700">
+            <button id="clear-selection-button" type="button" class="rounded-lg border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 dark:border-gray-600 dark:text-gray-300">
               Clear all
             </button>
-            <button id="continue-button" type="button" disabled class="ml-auto rounded-lg bg-orange-500 px-4 py-2 text-sm font-semibold text-white disabled:bg-gray-300 disabled:text-gray-500">
+            <button id="continue-button" type="button" disabled class="ml-auto rounded-lg bg-orange-500 px-4 py-2 text-sm font-semibold text-white disabled:bg-gray-300 disabled:text-gray-500 hover:bg-orange-400 transition dark:hover:bg-orange-600">
               <?= $canCheckout ? "Continue" : "Log in to reserve" ?>
             </button>
           </div>
@@ -169,12 +174,16 @@ require_once __DIR__ . "/includes/header.php";
     </div>
   </main>
 </div>
+<!-- Etat du mur injecte cote serveur et consomme cote client. -->
 <script id="wall-data" type="application/json"><?= safe_json($wallPixels) ?></script>
+<!-- Contexte d'authentification et de reservation pour la logique front de la grille. -->
 <script id="grid-auth" type="application/json"><?= safe_json([
   "loggedIn" => $canCheckout,
   "nextUrl" => "recap.php",
   "loginUrl" => "login.php?next=" . urlencode("recap.php"),
   "reservationMinutes" => $reserveMinutes,
 ]) ?></script>
+<!-- Module JavaScript principal de la page grille. -->
 <script type="module" src="assets/js/grid-page.js"></script>
+<?php // Affiche le pied de page global. ?>
 <?php require_once __DIR__ . "/includes/footer.php"; ?>

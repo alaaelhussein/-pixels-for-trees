@@ -48,6 +48,296 @@ function normalizeColor(value) {
   return "";
 }
 
+function buildExportFileName() {
+  const now = new Date();
+  const yyyy = now.getFullYear();
+  const mm = String(now.getMonth() + 1).padStart(2, "0");
+  const dd = String(now.getDate()).padStart(2, "0");
+  const hh = String(now.getHours()).padStart(2, "0");
+  const min = String(now.getMinutes()).padStart(2, "0");
+  const ss = String(now.getSeconds()).padStart(2, "0");
+
+  return `pixels-grid-${yyyy}${mm}${dd}-${hh}${min}${ss}.png`;
+}
+
+function downloadUrl(url, fileName) {
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = fileName;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+
+function exportGridAsPng(nodes) {
+  const canvas = nodes.container?.querySelector("canvas");
+
+  if (!canvas) {
+    return false;
+  }
+
+  const fileName = buildExportFileName();
+
+  if (typeof canvas.toBlob === "function") {
+    canvas.toBlob((blob) => {
+      if (!blob) {
+        return;
+      }
+
+      const url = URL.createObjectURL(blob);
+      downloadUrl(url, fileName);
+      URL.revokeObjectURL(url);
+    }, "image/png");
+
+    return true;
+  }
+
+  const dataUrl = canvas.toDataURL("image/png");
+  downloadUrl(dataUrl, fileName);
+  return true;
+}
+
+const drawerPositionKey = "pixels.grid.drawer.position.v1";
+
+function clamp(value, min, max) {
+  return Math.min(Math.max(value, min), max);
+}
+
+function initDrawerDrag(nodes) {
+  const drawer = nodes.drawer;
+  const handle = nodes.dragHandle;
+
+  if (!drawer || !handle || typeof window === "undefined") {
+    return;
+  }
+
+  let dragging = false;
+  let offsetX = 0;
+  let offsetY = 0;
+  let drawerWidth = 0;
+  let drawerHeight = 0;
+  let hasAppliedSavedPosition = false;
+
+  function parseSavedPosition() {
+    try {
+      const raw = window.localStorage.getItem(drawerPositionKey);
+
+      if (!raw) {
+        return null;
+      }
+
+      const value = JSON.parse(raw);
+
+      if (
+        typeof value?.left !== "number" ||
+        typeof value?.top !== "number"
+      ) {
+        return null;
+      }
+
+      return value;
+    } catch (error) {
+      return null;
+    }
+  }
+
+  function persistPosition(left, top) {
+    window.localStorage.setItem(
+      drawerPositionKey,
+      JSON.stringify({ left, top })
+    );
+  }
+
+  function getBounds() {
+    const maxLeft = Math.max(8, window.innerWidth - drawerWidth - 8);
+    const maxTop = Math.max(8, window.innerHeight - drawerHeight - 8);
+
+    return {
+      minLeft: 8,
+      minTop: 8,
+      maxLeft,
+      maxTop,
+    };
+  }
+
+  function applyFloatingStyles(rect) {
+    drawer.style.position = "fixed";
+    drawer.style.transform = "none";
+    drawer.style.bottom = "auto";
+    drawer.style.left = `${Math.round(rect.left)}px`;
+    drawer.style.top = `${Math.round(rect.top)}px`;
+    drawer.style.width = `${Math.round(rect.width)}px`;
+    drawer.style.maxWidth = "calc(100vw - 16px)";
+    drawer.style.zIndex = "60";
+  }
+
+  function applyPosition(left, top) {
+    const bounds = getBounds();
+    const nextLeft = clamp(left, bounds.minLeft, bounds.maxLeft);
+    const nextTop = clamp(top, bounds.minTop, bounds.maxTop);
+
+    drawer.style.left = `${Math.round(nextLeft)}px`;
+    drawer.style.top = `${Math.round(nextTop)}px`;
+    persistPosition(nextLeft, nextTop);
+  }
+
+  function ensureFloating() {
+    const rect = drawer.getBoundingClientRect();
+    drawerWidth = rect.width;
+    drawerHeight = rect.height;
+    applyFloatingStyles(rect);
+  }
+
+  function tryApplySavedPosition() {
+    if (hasAppliedSavedPosition || drawer.classList.contains("hidden")) {
+      return;
+    }
+
+    const rect = drawer.getBoundingClientRect();
+
+    if (!rect.width || !rect.height) {
+      return;
+    }
+
+    drawerWidth = rect.width;
+    drawerHeight = rect.height;
+    applyFloatingStyles(rect);
+
+    const saved = parseSavedPosition();
+
+    if (saved) {
+      applyPosition(saved.left, saved.top);
+    }
+
+    hasAppliedSavedPosition = true;
+  }
+
+  function startDrag(clientX, clientY) {
+    if (drawer.classList.contains("hidden")) {
+      return false;
+    }
+
+    ensureFloating();
+
+    const rect = drawer.getBoundingClientRect();
+    drawerWidth = rect.width;
+    drawerHeight = rect.height;
+    offsetX = clientX - rect.left;
+    offsetY = clientY - rect.top;
+    dragging = true;
+
+    handle.classList.remove("cursor-move");
+    handle.classList.add("cursor-grabbing");
+    return true;
+  }
+
+  function moveDrag(clientX, clientY) {
+    if (!dragging) {
+      return;
+    }
+
+    const nextLeft = clientX - offsetX;
+    const nextTop = clientY - offsetY;
+    applyPosition(nextLeft, nextTop);
+  }
+
+  function stopDrag() {
+    dragging = false;
+    handle.classList.remove("cursor-grabbing");
+    handle.classList.add("cursor-move");
+  }
+
+  function isCloseButtonTarget(target) {
+    return (
+      target instanceof Element &&
+      Boolean(target.closest("#close-drawer-button"))
+    );
+  }
+
+  handle.addEventListener("mousedown", (event) => {
+    if (event.button !== 0 || isCloseButtonTarget(event.target)) {
+      return;
+    }
+
+    if (!startDrag(event.clientX, event.clientY)) {
+      return;
+    }
+
+    const onMouseMove = (moveEvent) => {
+      moveDrag(moveEvent.clientX, moveEvent.clientY);
+    };
+
+    const onMouseUp = () => {
+      window.removeEventListener("mousemove", onMouseMove);
+      window.removeEventListener("mouseup", onMouseUp);
+      stopDrag();
+    };
+
+    window.addEventListener("mousemove", onMouseMove);
+    window.addEventListener("mouseup", onMouseUp);
+    event.preventDefault();
+  });
+
+  handle.addEventListener("touchstart", (event) => {
+    if (isCloseButtonTarget(event.target) || !event.touches.length) {
+      return;
+    }
+
+    const touch = event.touches[0];
+
+    if (!startDrag(touch.clientX, touch.clientY)) {
+      return;
+    }
+
+    const onTouchMove = (moveEvent) => {
+      if (!moveEvent.touches.length) {
+        return;
+      }
+
+      const activeTouch = moveEvent.touches[0];
+      moveDrag(activeTouch.clientX, activeTouch.clientY);
+      moveEvent.preventDefault();
+    };
+
+    const onTouchEnd = () => {
+      window.removeEventListener("touchmove", onTouchMove);
+      window.removeEventListener("touchend", onTouchEnd);
+      window.removeEventListener("touchcancel", onTouchEnd);
+      stopDrag();
+    };
+
+    window.addEventListener("touchmove", onTouchMove, { passive: false });
+    window.addEventListener("touchend", onTouchEnd);
+    window.addEventListener("touchcancel", onTouchEnd);
+    event.preventDefault();
+  });
+
+  window.addEventListener("resize", () => {
+    if (drawer.classList.contains("hidden")) {
+      return;
+    }
+
+    tryApplySavedPosition();
+    const currentLeft = Number.parseFloat(drawer.style.left);
+    const currentTop = Number.parseFloat(drawer.style.top);
+
+    if (Number.isFinite(currentLeft) && Number.isFinite(currentTop)) {
+      applyPosition(currentLeft, currentTop);
+    }
+  });
+
+  const observer = new MutationObserver(() => {
+    tryApplySavedPosition();
+  });
+
+  observer.observe(drawer, {
+    attributes: true,
+    attributeFilter: ["class"],
+  });
+
+  tryApplySavedPosition();
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   const nodes = getGridNodes();
   const auth = readAuthState();
@@ -70,6 +360,7 @@ document.addEventListener("DOMContentLoaded", () => {
   setPanelColor(nodes, "#FB923C");
   grid.setDraftColor("#FB923C");
   setGridSummary(nodes, [], null);
+  initDrawerDrag(nodes);
 
   if (nodes.infoButton) {
     nodes.infoButton.addEventListener("click", () => {
@@ -95,28 +386,22 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  if (nodes.jump) {
-    const runJump = () => {
-      const x = Number(nodes.jumpX?.value || -1);
-      const y = Number(nodes.jumpY?.value || -1);
+  if (nodes.exportPng) {
+    nodes.exportPng.addEventListener("click", () => {
+      const ok = exportGridAsPng(nodes);
 
-      if (x < 0 || y < 0) {
+      if (!ok) {
+        nodes.exportPng.textContent = "Error";
+        window.setTimeout(() => {
+          nodes.exportPng.textContent = "PNG";
+        }, 1200);
         return;
       }
 
-      grid.goToCell(x, y);
-    };
-
-    nodes.jump.addEventListener("click", runJump);
-    nodes.jumpX?.addEventListener("keydown", (event) => {
-      if (event.key === "Enter") {
-        runJump();
-      }
-    });
-    nodes.jumpY?.addEventListener("keydown", (event) => {
-      if (event.key === "Enter") {
-        runJump();
-      }
+      nodes.exportPng.textContent = "Saved";
+      window.setTimeout(() => {
+        nodes.exportPng.textContent = "PNG";
+      }, 1200);
     });
   }
 
