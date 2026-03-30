@@ -137,7 +137,9 @@ export function createGridView(
   }
 
   function draw(activeItem) {
-    ctx.fillStyle = "#F3F4F6";
+    ctx.fillStyle = document.documentElement.classList.contains("dark")
+      ? "#111111"
+      : "#F3F4F6";
     ctx.fillRect(0, 0, state.width, state.height);
     ctx.save();
     ctx.translate(state.offsetX, state.offsetY);

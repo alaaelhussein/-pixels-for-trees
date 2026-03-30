@@ -1,11 +1,8 @@
 <?php
-// Charge le socle applicatif partage.
 require_once __DIR__ . "/includes/app/boot.php";
 
-// Verifie l'acces administrateur avant tout rendu de la page.
 require_admin();
 
-// Prepare les jeux de donnees de pilotage pour le tableau de bord.
 $pageTitle = "Admin dashboard";
 $stats = wall_stats();
 $users = users_all();
@@ -17,25 +14,21 @@ $progress = $stats["pixels"] > 0
     ? ($stats["pixels"] / 1000000) * 100
     : 0;
 
-// Affiche l'en-tete global de l'application.
 require_once __DIR__ . "/includes/header.php";
 ?>
 <div class="min-h-screen flex flex-col bg-gray-50">
   <main class="flex-1 py-8 px-4">
     <div class="max-w-7xl mx-auto space-y-8">
-      <!-- En-tete fonctionnel du dashboard administrateur. -->
       <div>
         <h1 class="text-3xl font-bold text-gray-900 mb-2">Admin dashboard</h1>
         <p class="text-gray-600">Real data, webhooks, users, and donations.</p>
       </div>
-      <!-- Cartes de KPI: vue rapide sur les indicateurs clefs. -->
       <div class="grid md:grid-cols-4 gap-6">
         <div class="bg-white rounded-lg shadow-md p-6"><p class="text-sm text-gray-600">Users</p><p class="text-3xl font-semibold"><?= $stats["users"] ?></p></div>
         <div class="bg-white rounded-lg shadow-md p-6"><p class="text-sm text-gray-600">Donors</p><p class="text-3xl font-semibold"><?= $stats["donors"] ?></p></div>
         <div class="bg-white rounded-lg shadow-md p-6"><p class="text-sm text-gray-600">Donations</p><p class="text-3xl font-semibold"><?= money($stats["amount"]) ?></p></div>
         <div class="bg-white rounded-lg shadow-md p-6"><p class="text-sm text-gray-600">Pixels</p><p class="text-3xl font-semibold"><?= $stats["pixels"] ?></p></div>
       </div>
-      <!-- Outils d'administration: actions de seed et reset du mur. -->
       <div class="bg-white rounded-lg shadow-md p-6 space-y-4">
         <h2 class="text-xl font-semibold">Admin tools</h2>
         <div class="flex flex-wrap gap-3">
@@ -43,7 +36,6 @@ require_once __DIR__ . "/includes/header.php";
           <form method="post" action="actions/admin.php" onsubmit="return confirm('Reset entire wall? This deletes all donations.')"><input type="hidden" name="csrf" value="<?= csrf_token() ?>" /><input type="hidden" name="action" value="reset" /><button class="bg-red-600 text-white rounded-lg px-4 py-2">Reset wall</button></form>
         </div>
       </div>
-      <!-- Aide webhook: endpoint de reception et exemple de test manuel. -->
       <div class="bg-white rounded-lg shadow-md p-6 space-y-3">
         <h2 class="text-xl font-semibold">Webhook info</h2>
         <p class="text-sm text-gray-600">Every.org posts to this URL when a donation is confirmed. Use the curl below to test manually, or click <strong>Test</strong> next to any pending donation in the table.</p>
@@ -56,7 +48,6 @@ require_once __DIR__ . "/includes/header.php";
   -d '{"event":"donation.confirmed","chargeId":"test123","partnerDonationId":"REPLACE_WITH_DONATION_ID","amount":"2","currency":"USD","firstName":"Test","lastName":"Donor","email":"test@pixels.test","donationDate":"<?= date('c') ?>","toNonprofit":{"slug":"<?= htmlspecialchars(every_nonprofit()) ?>","name":"Plant With Purpose"}}'</pre>
         </details>
       </div>
-      <!-- File des dons en attente avec confirmation manuelle. -->
       <div class="bg-white rounded-lg shadow-md p-6">
         <h2 class="text-xl font-semibold mb-4">Pending donations</h2>
         <?php foreach ($pending as $item): ?>
@@ -69,7 +60,6 @@ require_once __DIR__ . "/includes/header.php";
           </form>
         <?php endforeach; ?>
       </div>
-      <!-- Historique des dons avec actions de test webhook/suppression. -->
       <div id="donations" class="bg-white rounded-lg shadow-md overflow-hidden">
         <div class="p-6 border-b border-gray-200"><h2 class="text-xl font-semibold">Latest donations</h2></div>
         <div class="overflow-x-auto"><table class="w-full"><thead class="bg-gray-50"><tr><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">User</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Amount</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Pixels</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Webhook</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th></tr></thead><tbody class="bg-white divide-y divide-gray-200">
@@ -100,12 +90,10 @@ require_once __DIR__ . "/includes/header.php";
           <?php endforeach; ?>
         </tbody></table></div>
       </div>
-      <!-- Tables de reference: utilisateurs et journal des webhooks. -->
       <div class="grid lg:grid-cols-2 gap-8">
         <div id="users" class="bg-white rounded-lg shadow-md overflow-hidden"><div class="p-6 border-b"><h2 class="text-xl font-semibold">Users</h2></div><div class="overflow-x-auto"><table class="w-full"><thead class="bg-gray-50"><tr><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Role</th></tr></thead><tbody class="divide-y"><?php foreach ($users as $item): ?><tr><td class="px-6 py-4"><?= htmlspecialchars($item['name']) ?></td><td class="px-6 py-4"><?= htmlspecialchars($item['email']) ?></td><td class="px-6 py-4"><?= htmlspecialchars($item['role']) ?></td></tr><?php endforeach; ?></tbody></table></div></div>
         <div id="webhooks" class="bg-white rounded-lg shadow-md overflow-hidden"><div class="p-6 border-b"><h2 class="text-xl font-semibold">Webhooks</h2></div><div class="overflow-x-auto"><table class="w-full"><thead class="bg-gray-50"><tr><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Event</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Donation</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th></tr></thead><tbody class="divide-y"><?php foreach (array_reverse($webhooks) as $item): ?><tr><td class="px-6 py-4"><?= htmlspecialchars(substr($item['createdAt'], 0, 16)) ?></td><td class="px-6 py-4"><?= htmlspecialchars($item['event']) ?></td><td class="px-6 py-4"><?= htmlspecialchars($item['donationId']) ?></td><td class="px-6 py-4"><?= htmlspecialchars($item['status']) ?></td></tr><?php endforeach; ?></tbody></table></div></div>
       </div>
-      <!-- Vue globale de la grille et progression de remplissage. -->
       <div class="bg-white rounded-lg shadow-md p-6">
         <h2 class="text-xl font-semibold text-gray-900 mb-6">Global grid view</h2>
         <div class="flex justify-center"><div id="admin-grid"></div></div>
@@ -114,9 +102,6 @@ require_once __DIR__ . "/includes/header.php";
     </div>
   </main>
 </div>
-<!-- Etat de la grille serialize, consomme par le module JS d'administration. -->
 <script id="wall-data" type="application/json"><?= safe_json($wallPixels) ?></script>
-<!-- Comportements interactifs specifiques a la page admin. -->
 <script type="module" src="assets/js/admin-page.js"></script>
-<?php // Affiche le pied de page global. ?>
 <?php require_once __DIR__ . "/includes/footer.php"; ?>

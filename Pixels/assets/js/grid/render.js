@@ -49,7 +49,9 @@ function drawCellBorder(ctx, x, y, size, color) {
 
 function drawGuides(ctx, state, bounds) {
   const step = 10;
-  ctx.strokeStyle = "rgba(148, 163, 184, 0.18)";
+  ctx.strokeStyle = document.documentElement.classList.contains("dark")
+    ? "rgba(255, 255, 255, 0.06)"
+    : "rgba(0, 0, 0, 0.08)";
   ctx.lineWidth = 1;
 
   for (let x = bounds.startX; x <= bounds.endX; x += step) {
@@ -100,23 +102,25 @@ export function drawGrid(
           selected.color || "#FB923C"
         );
       } else {
-        drawCell(ctx, x, y, state.cellSize, "#FFFFFF");
+        const emptyColor = document.documentElement.classList.contains("dark")
+          ? "#000000"
+          : "#FFFFFF";
+        drawCell(ctx, x, y, state.cellSize, emptyColor);
       }
 
       if (key !== activeKey) {
         continue;
       }
 
+      const strokeColor = document.documentElement.classList.contains("dark")
+        ? "#9ca3af"
+        : "#374151";
       drawCellBorder(
         ctx,
         x,
         y,
         state.cellSize,
-        activeKind === "reserved"
-          ? "#1D4ED8"
-          : activeKind === "confirmed"
-            ? "#166534"
-            : "#0F172A"
+        strokeColor
       );
     }
   }
@@ -128,7 +132,7 @@ export function drawMiniMap(ctx, state) {
   const scale = size / state.totalGridPx;
   const x = state.width - size - pad;
   const y = state.height - size - pad;
-  //AS map world coords into mini map space
+  // map world coords to minimap space
   const viewX = -state.offsetX / state.scale * scale;
   const viewY = -state.offsetY / state.scale * scale;
   const viewW = state.width / state.scale * scale;

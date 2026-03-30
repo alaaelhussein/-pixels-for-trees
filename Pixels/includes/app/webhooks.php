@@ -1,6 +1,4 @@
 <?php
-// webhooks.php — SQLite read/write layer for webhook log
-
 function webhooks_all(): array
 {
     $rows = db()->query("SELECT * FROM webhooks ORDER BY created_at ASC")->fetchAll();

@@ -14,6 +14,9 @@ export function getGridNodes() {
     infoPanel: document.querySelector(
       "#grid-info-panel"
     ),
+    infoClose: document.querySelector(
+      "#info-close-btn"
+    ),
     active: document.querySelector(
       "#active-cell"
     ),
@@ -65,7 +68,10 @@ export function getGridNodes() {
     zoomOut: document.querySelector(
       "#zoom-out-btn"
     ),
-    color: null, // native picker removed; swatches used instead
+    color: null,
+    colorNative: document.querySelector(
+      "#pixel-color-native"
+    ),
     colorText: document.querySelector(
       "#pixel-color-text"
     ),
@@ -110,7 +116,10 @@ export function setPanelColor(
     nodes.colorText.value = color;
   }
 
-  // highlight matching swatch
+  if (nodes.colorNative) {
+    nodes.colorNative.value = color;
+  }
+
   document.querySelectorAll(".color-swatch").forEach((btn) => {
     const match = btn.dataset.color === color;
     btn.style.outline = match ? "3px solid #1E293B" : "none";

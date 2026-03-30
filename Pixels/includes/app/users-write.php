@@ -1,6 +1,4 @@
 <?php
-// users-write.php — SQLite write layer for users
-
 function create_user(
     string $name,
     string $email,

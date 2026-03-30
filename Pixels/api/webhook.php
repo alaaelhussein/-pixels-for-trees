@@ -10,7 +10,7 @@ $secret = (string) (
     ?? ""
 );
 
-// every.org sends their partner token; fall back to internal webhook secret for manual calls
+// use every.org partner token, or fall back to the internal secret
 $expected = every_webhook_token() ?: webhook_secret();
 if ($secret !== $expected) {
     json_out(["ok" => false], 403);

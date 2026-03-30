@@ -1,5 +1,3 @@
-// Gestion du mode sombre avec localStorage et détection système
-
 const darkModeKey = "pixels.theme.mode";
 const HTML = document.documentElement;
 const DARK_CLASS = "dark";
@@ -11,7 +9,6 @@ function isDarkMode() {
     return saved === "dark";
   }
 
-  // Détection système si rien n'est sauvé
   return window.matchMedia("(prefers-color-scheme: dark)").matches;
 }
 
@@ -28,14 +25,16 @@ function applyTheme(dark) {
 }
 
 function updateToggleIcon() {
-  const toggle = document.querySelector("#theme-toggle");
+  const sunIcon = document.querySelector("#theme-icon-sun");
+  const moonIcon = document.querySelector("#theme-icon-moon");
 
-  if (!toggle) {
+  if (!sunIcon || !moonIcon) {
     return;
   }
 
   const isDark = HTML.classList.contains(DARK_CLASS);
-  toggle.textContent = isDark ? "🌙" : "☀️";
+  sunIcon.classList.toggle("hidden", isDark);
+  moonIcon.classList.toggle("hidden", !isDark);
 }
 
 function initTheme() {
@@ -53,18 +52,16 @@ function initTheme() {
     applyTheme(!currentlyDark);
   });
 
-  // Écouter les changements de préférence système
+  // only update if the user has not set a preference
   window
     .matchMedia("(prefers-color-scheme: dark)")
     .addEventListener("change", (event) => {
-      // Ne changer automatiquement que si l'utilisateur n'a pas défini sa préférence
       if (localStorage.getItem(darkModeKey) === null) {
         applyTheme(event.matches);
       }
     });
 }
 
-// Initialiser dès le chargement du DOM
 if (document.readyState === "loading") {
   document.addEventListener("DOMContentLoaded", initTheme);
 } else {

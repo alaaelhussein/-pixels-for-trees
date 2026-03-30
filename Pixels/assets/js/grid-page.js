@@ -98,6 +98,7 @@ function exportGridAsPng(nodes) {
 }
 
 const drawerPositionKey = "pixels.grid.drawer.position.v1";
+let lastClickPos = null;
 
 function clamp(value, min, max) {
   return Math.min(Math.max(value, min), max);
@@ -112,11 +113,14 @@ function initDrawerDrag(nodes) {
   }
 
   let dragging = false;
+  let pendingDrag = false;
+  let dragStartX = 0;
+  let dragStartY = 0;
+  const DRAG_THRESHOLD = 5;
   let offsetX = 0;
   let offsetY = 0;
   let drawerWidth = 0;
   let drawerHeight = 0;
-  let hasAppliedSavedPosition = false;
 
   function parseSavedPosition() {
     try {
@@ -189,27 +193,45 @@ function initDrawerDrag(nodes) {
   }
 
   function tryApplySavedPosition() {
-    if (hasAppliedSavedPosition || drawer.classList.contains("hidden")) {
+    if (drawer.classList.contains("hidden")) {
       return;
     }
 
-    const rect = drawer.getBoundingClientRect();
+    requestAnimationFrame(() => {
+      const rect = drawer.getBoundingClientRect();
 
-    if (!rect.width || !rect.height) {
-      return;
-    }
+      if (!rect.width || !rect.height) {
+        return;
+      }
 
-    drawerWidth = rect.width;
-    drawerHeight = rect.height;
-    applyFloatingStyles(rect);
+      drawerWidth = rect.width;
+      drawerHeight = rect.height;
+      applyFloatingStyles(rect);
 
-    const saved = parseSavedPosition();
+      const saved = parseSavedPosition();
+      const bottomY = window.innerHeight - drawerHeight - 8;
 
-    if (saved) {
-      applyPosition(saved.left, saved.top);
-    }
+      if (saved) {
+        applyPosition(saved.left, bottomY);
+      } else if (lastClickPos) {
+        const centeredLeft = (window.innerWidth - drawerWidth) / 2;
 
-    hasAppliedSavedPosition = true;
+        // avoid centering the drawer on top of the clicked pixel
+        const clickX = lastClickPos.x;
+        const clickY = lastClickPos.y;
+        const centeredOverlaps =
+          clickX >= centeredLeft &&
+          clickX <= centeredLeft + drawerWidth &&
+          clickY >= bottomY &&
+          clickY <= bottomY + drawerHeight;
+
+        const left = centeredOverlaps
+          ? (lastClickPos.x > window.innerWidth / 2 ? 8 : window.innerWidth - drawerWidth - 8)
+          : centeredLeft;
+
+        applyPosition(left, bottomY);
+      }
+    });
   }
 
   function startDrag(clientX, clientY) {
@@ -224,16 +246,27 @@ function initDrawerDrag(nodes) {
     drawerHeight = rect.height;
     offsetX = clientX - rect.left;
     offsetY = clientY - rect.top;
-    dragging = true;
-
-    handle.classList.remove("cursor-move");
-    handle.classList.add("cursor-grabbing");
+    dragStartX = clientX;
+    dragStartY = clientY;
+    pendingDrag = true;
+    dragging = false;
     return true;
   }
 
   function moveDrag(clientX, clientY) {
-    if (!dragging) {
+    if (!pendingDrag) {
       return;
+    }
+
+    if (!dragging) {
+      const dx = clientX - dragStartX;
+      const dy = clientY - dragStartY;
+      if (Math.sqrt(dx * dx + dy * dy) < DRAG_THRESHOLD) {
+        return;
+      }
+      dragging = true;
+      handle.classList.remove("cursor-move");
+      handle.classList.add("cursor-grabbing");
     }
 
     const nextLeft = clientX - offsetX;
@@ -242,6 +275,7 @@ function initDrawerDrag(nodes) {
   }
 
   function stopDrag() {
+    pendingDrag = false;
     dragging = false;
     handle.classList.remove("cursor-grabbing");
     handle.classList.add("cursor-move");
@@ -361,12 +395,32 @@ document.addEventListener("DOMContentLoaded", () => {
   grid.setDraftColor("#FB923C");
   setGridSummary(nodes, [], null);
   initDrawerDrag(nodes);
+  nodes.container.addEventListener("click", (e) => {
+    lastClickPos = { x: e.clientX, y: e.clientY };
+    window.localStorage.removeItem(drawerPositionKey);
+  });
 
   if (nodes.infoButton) {
-    nodes.infoButton.addEventListener("click", () => {
+    nodes.infoButton.addEventListener("click", (event) => {
+      event.stopPropagation();
       toggleInfo(nodes);
     });
   }
+
+  if (nodes.infoClose) {
+    nodes.infoClose.addEventListener("click", (event) => {
+      event.stopPropagation();
+      if (nodes.infoPanel) {
+        nodes.infoPanel.classList.add("hidden");
+      }
+    });
+  }
+
+  document.addEventListener("click", () => {
+    if (nodes.infoPanel && !nodes.infoPanel.classList.contains("hidden")) {
+      nodes.infoPanel.classList.add("hidden");
+    }
+  });
 
   if (nodes.reset) {
     nodes.reset.addEventListener("click", () => {
@@ -435,12 +489,15 @@ document.addEventListener("DOMContentLoaded", () => {
     grid.setActiveColor(color);
   }
 
-  // swatch clicks
   document.querySelectorAll(".color-swatch").forEach((btn) => {
     btn.addEventListener("click", () => {
       applyColor(btn.dataset.color);
     });
   });
+
+  if (nodes.colorNative) {
+    nodes.colorNative.addEventListener("input", (e) => applyColor(e.target.value));
+  }
 
   if (nodes.colorText) {
     nodes.colorText.addEventListener("input", (event) => {

@@ -1,5 +1,4 @@
 <?php
-// Fabrique un SVG standardise a partir d'une liste de primitives vectorielles.
 function icon_svg(
     string $class,
     array $parts
@@ -17,7 +16,6 @@ function icon_svg(
         "</svg>";
 }
 
-// Icone sapin, utilisee pour symboliser l'impact environnemental.
 function icon_tree_pine(
     string $class = ""
 ): string {
@@ -28,7 +26,6 @@ function icon_tree_pine(
     ]);
 }
 
-// Icone pointeur, utile pour les actions de selection/clic.
 function icon_pointer(
     string $class = ""
 ): string {
@@ -37,7 +34,6 @@ function icon_pointer(
     ]);
 }
 
-// Icone dollar, represente la contribution financiere.
 function icon_dollar(
     string $class = ""
 ): string {
@@ -49,7 +45,6 @@ function icon_dollar(
     ]);
 }
 
-// Icone etoiles, utilisee pour les etats de mise en valeur.
 function icon_sparkles(
     string $class = ""
 ): string {
@@ -67,12 +62,35 @@ function icon_sparkles(
     ]);
 }
 
-// Icone fleche retour gauche, typiquement pour la navigation precedente.
 function icon_arrow_left(
     string $class = ""
 ): string {
     return icon_svg($class, [
         '<path d="M19 12H5"/>',
         '<path d="M11 19l-7-7 7-7"/>',
+    ]);
+}
+
+function icon_sun(
+    string $class = ""
+): string {
+    return icon_svg($class, [
+        '<circle cx="12" cy="12" r="4"/>',
+        '<line x1="12" y1="2" x2="12" y2="4"/>',
+        '<line x1="12" y1="20" x2="12" y2="22"/>',
+        '<line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>',
+        '<line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>',
+        '<line x1="2" y1="12" x2="4" y2="12"/>',
+        '<line x1="20" y1="12" x2="22" y2="12"/>',
+        '<line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>',
+        '<line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>',
+    ]);
+}
+
+function icon_moon(
+    string $class = ""
+): string {
+    return icon_svg($class, [
+        '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>',
     ]);
 }

@@ -1,6 +1,4 @@
 <?php
-// donations-read.php — SQLite read layer for donations
-
 function row_to_donation(array $row): array
 {
     $meta = json_decode((string) ($row['meta'] ?? '{}'), true) ?: [];
@@ -30,8 +28,7 @@ function donations_all(): array
 
 function donations_save(array $items): void
 {
-    // used internally — upserts all passed items
-    $pdo  = db();
+    $pdo = db();
     $stmt = $pdo->prepare("
         INSERT OR REPLACE INTO donations
             (id, user_id, user_name, amount, pixels_data, message,
@@ -60,4 +57,18 @@ function user_donations(string $userId): array
     $stmt = db()->prepare("SELECT * FROM donations WHERE user_id = ? ORDER BY created_at ASC");
     $stmt->execute([$userId]);
     return array_map('row_to_donation', $stmt->fetchAll());
+}
+
+function leaderboard_players(int $limit = 50): array
+{
+    $stmt = db()->prepare("
+        SELECT user_name, SUM(json_array_length(pixels_data)) AS pixel_count
+        FROM donations
+        WHERE status = 'confirmed'
+        GROUP BY user_id, user_name
+        ORDER BY pixel_count DESC
+        LIMIT ?
+    ");
+    $stmt->execute([$limit]);
+    return $stmt->fetchAll();
 }

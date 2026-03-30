@@ -1,6 +1,4 @@
 <?php
-// users.php — SQLite read layer for users
-
 function row_to_user(array $row): array
 {
     return [

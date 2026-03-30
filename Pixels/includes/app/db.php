@@ -1,7 +1,4 @@
 <?php
-// db.php — SQLite singleton
-// Opens (or creates) the database and runs migrations on first boot.
-
 function db(): PDO
 {
     static $pdo = null;

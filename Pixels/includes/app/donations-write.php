@@ -1,6 +1,4 @@
 <?php
-// donations-write.php — SQLite write layer for donations
-
 function donation_to_row(array $d): array
 {
     $known = ['id','userId','userName','amount','pixelsData','message',

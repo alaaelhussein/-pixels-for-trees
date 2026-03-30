@@ -1,17 +1,13 @@
 <?php
-// Charge le socle applicatif partage.
 require_once __DIR__ . "/includes/app/boot.php";
 
-// Verifie l'utilisateur connecte et recupere la donation cible depuis l'URL.
 $user = require_user();
 $item = find_donation((string) ($_GET["id"] ?? ""));
 
-// Protege l'acces: l'utilisateur ne peut consulter que sa propre donation.
 if (!$item || ($item["userId"] ?? "") !== $user["id"]) {
     go("grid.php");
 }
 
-// Construit l'etat d'affichage de la page paiement (retour, annulation, expiration, confirmation).
 $done = isset($_GET["done"]);
 $cancel = isset($_GET["cancel"]);
 $confirmed = ($item["status"] ?? "") === "confirmed";
@@ -22,7 +18,6 @@ $reserveText = $reserveLeft > 0
   : "Expired";
 $everyLink = every_donate_url($item, $user);
 $pageTitle = "Payment";
-// Affiche l'en-tete global du site.
 require_once __DIR__ . "/includes/header.php";
 ?>
 <div class="min-h-screen bg-gray-50 py-12 px-4">
@@ -33,7 +28,6 @@ require_once __DIR__ . "/includes/header.php";
       <?= count(donation_pixels($item)) ?> pixels.
     </p>
     <div class="space-y-4 mb-6">
-      <!-- Carte de contexte paiement: partenaire, webhook et fenetre de reservation. -->
       <div class="rounded-lg border border-gray-200 bg-gray-50 p-4">
         <p class="font-semibold text-gray-900">Plant With Purpose</p>
         <p class="text-sm text-gray-600 mt-1">
@@ -44,7 +38,6 @@ require_once __DIR__ . "/includes/header.php";
           Reservation window: <?= htmlspecialchars($reserveText) ?>
         </p>
       </div>
-      <!-- Etats metier du paiement: confirme, expire, en attente retour, annule. -->
       <?php if ($confirmed): ?>
         <div class="rounded-lg border border-green-200 bg-green-50 p-4 text-green-800">
           Donation confirmed. The pixels are now locked on the wall.
@@ -58,7 +51,6 @@ require_once __DIR__ . "/includes/header.php";
           <span>Every.org return received — waiting for payment confirmation…</span>
           <span id="poll-spinner" class="ml-3 text-blue-400 text-xs">checking…</span>
         </div>
-        <!-- Polling client: verifie periodiquement la confirmation webhook. -->
         <script>
           // poll every 3 s for up to 2 minutes until status flips to confirmed
           (function() {
@@ -88,7 +80,6 @@ require_once __DIR__ . "/includes/header.php";
         </div>
       <?php endif; ?>
     </div>
-    <!-- Actions contextuelles selon le statut courant de la donation. -->
     <?php if (!$confirmed && !$expired): ?>
       <a href="<?= htmlspecialchars($everyLink) ?>"
         class="block text-center bg-blue-600 text-white rounded-lg py-3 mb-4">
@@ -115,5 +106,4 @@ require_once __DIR__ . "/includes/header.php";
     <?php endif; ?>
   </div>
 </div>
-<?php // Affiche le pied de page global. ?>
 <?php require_once __DIR__ . "/includes/footer.php"; ?>
